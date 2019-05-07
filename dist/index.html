@@ -1,0 +1,1506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Pockey</title>
+    <script src="js/pixi.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="css/mainMenuScreen.css">
+    <link rel="stylesheet" type="text/css" href="css/inventoryScreen.css">
+    <link rel="stylesheet" type="text/css" href="css/leaderboard.css">
+    <link rel="stylesheet" type="text/css" href="css/searchingScreen.css">
+    <link rel="stylesheet" type="text/css" href="css/scoreBoard.css">
+
+    <style>
+        html, body {
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            background: #112F36;
+        }
+
+        #renderCanvas {
+            width: 100%;
+            height: 100%;
+            touch-action: none;
+        }
+    </style>
+    <!--<script src="https://preview.babylonjs.com/babylon.js"></script>-->
+    <!--<script src='js/howler.min.js' type='text/javascript'></script>-->
+    <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/4.8.0/pixi.min.js"></script>-->
+    <!--<script src="js/pixi-picture.js"></script>-->
+    <!--<script src="js/smoothie.js"></script>-->
+    <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/webfont/1.6.28/webfontloader.js"></script>-->
+    <!--<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js"></script>-->
+    <script src="https://apis.google.com/js/api:client.js"></script>
+    <script>
+
+
+        let googleUser = {};
+        let startApp = function () {
+            gapi.load('auth2', function () {
+                // Retrieve the singleton for the GoogleAuth library and set up the client.
+                auth2 = gapi.auth2.init({
+                    client_id: '934645713517-lueaoo6vn5hkctduvptpekbvo42q1im6.apps.googleusercontent.com',
+                    cookiepolicy: 'single_host_origin'
+                });
+                attachSignin(document.getElementById('GoogleSignInButtonHolder'));
+            });
+        };
+
+        function attachSignin(element) {
+            auth2.attachClickHandler(element, {},
+                function (googleUser) {
+
+                    let profile = googleUser.getBasicProfile();
+                    let userEmail = profile.getEmail();
+                    console.log("Email: " + userEmail);
+                    let pockeyEvent = new CustomEvent('PockeyGoogleSignInEvent', {detail: userEmail});
+
+                    element.dispatchEvent(pockeyEvent);
+                    signOut();
+                }, function (error) {
+                    alert(JSON.stringify(error, undefined, 2));
+                });
+        }
+
+
+    </script>
+    <!--<script src="TweenMax.min.js"></script>-->
+    <!--<script src="p2.min.js"></script>-->
+    <!--<script src="lodash.min.js"></script>-->
+</head>
+
+<body>
+<script>
+    window.fbAsyncInit = function () {
+        FB.init({
+            appId: '741480272854448',
+            xfbml: true,
+            version: 'v2.8'
+        });
+    };
+    (function (d, s, id) {
+        let js, fjs = d.getElementsByTagName(s)[0];
+        if (d.getElementById(id)) {
+            return;
+        }
+        js = d.createElement(s);
+        js.id = id;
+        js.src = "//connect.facebook.net/en_US/sdk.js";
+        fjs.parentNode.insertBefore(js, fjs);
+    }(document, 'script', 'facebook-jssdk'));
+
+    // login with facebook with extra permissions
+    function FacebookLogin() {
+        FB.login(function (response) {
+            if (response.status === 'connected') {
+                console.log("la login connected");
+                getInfo();
+            } else if (response.status === 'not_authorized') {
+                console.log("la login not authorized");
+
+            } else {
+                console.log("la login else");
+
+            }
+//             console.log("la fb login email: " + response);
+        }, {scope: 'email'});
+
+
+    }
+
+    // getting basic user info
+    function getInfo() {
+        FB.api('/me?fields=email,id', 'GET', {}, function (response) {
+            let pockeyCustomEvent = new CustomEvent("PockeyFacebookSignedIn", {
+                detail: {
+                    email: response.email,
+                    id: response.id
+                }
+            });
+            document.getElementById('FacebookSignInButtonHolder').dispatchEvent(pockeyCustomEvent);
+            signOut();
+        }, {scope: 'email'});
+    }
+</script>
+
+<div id="MainBackground" class="background"></div>
+<div id="SecondBackground" class="background"></div>
+
+<div id="PockeyHatAndStick">
+    <div id="PockeyStick"></div>
+    <div id="PockeyHat"></div>
+</div>
+
+<div id="MainMenuBg">
+    <div id="MainMenuBackButtonHolder">
+        <div id="BackToMainMenuButton">
+            <div id="BackToMainMenuButtonIcon"></div>
+            BACK
+        </div>
+
+        <div id="MenuTitle">
+            <div id="MenuLogo"></div>
+            <span id="MenuTitleSpan">Menu Title</span>
+        </div>
+
+    </div>
+
+</div>
+<div id="MainMenuElementsHolder">
+    <div id="MainButtonsHolder">
+        <div class="simpleBtn" id="PlayGameButton">
+            <div class="simpleBtnArrow"></div>
+            PLAY GAME
+            <div class="simpleBtnHighlight"></div>
+        </div>
+        <div class="simpleBtn" id="InventoryButton">
+            <div class="simpleBtnArrow"></div>
+            INVENTORY
+            <div class="simpleBtnHighlight"></div>
+        </div>
+        <div class="simpleBtn" id="InviteFriendsButton">
+            <div class="simpleBtnArrow"></div>
+            INVITE FRIENDS
+            <div class="simpleBtnHighlight"></div>
+        </div>
+        <div class="simpleBtn" id="LeaderboardButton">
+            <div class="simpleBtnArrow"></div>
+            ALL-STARS
+            <div class="simpleBtnHighlight"></div>
+        </div>
+    </div>
+    <div id="RightSideBackground">
+        <div id="LoginScreen">
+            <div id="LeftSide">
+                <div id="LeftSideButtonsHolder">
+                    <div id="InputTextHolder">
+                        <input id="InputText" type="text" placeholder="Your nickname...">
+                        <div id="CorrectText">Don't panic, choose a nickname.</div>
+                    </div>
+                    <div id="MainMenuPlayerRankingsHolder">
+                        <div id="MainMenuPlayerWins" class="mainMenuRankingCircle">
+                            <div class="mainMenuRankingText">Wins</div>
+                        </div>
+                        <div id="MainMenuPlayerLosses" class="mainMenuRankingCircle">
+                            <div class="mainMenuRankingText">Losses</div>
+                        </div>
+                        <div id="MainMenuPlayerStreak" class="mainMenuRankingCircle">
+                            <div class="mainMenuRankingText">Streak</div>
+                        </div>
+                        <div id="MainMenuPlayerFouls" class="mainMenuRankingCircle">
+                            <div class="mainMenuRankingText">Fouls</div>
+                        </div>
+                    </div>
+                    <div class="customizePlayerLine" id="CustomizeTextHolder">
+                        <div class="customizeLineHolder">
+                            <div class="line"></div>
+                        </div>
+                        <div id="CustomizeText">customize</div>
+                        <div class="customizeLineHolder">
+                            <div class="line"></div>
+                        </div>
+                    </div>
+                    <div id="PlayerCustomizationHolder">
+                        <div id="PlayerColorAndAvatarHolder">
+                            <div id="PlayerColorHolder">
+                                <div class="arrowHolder" id="PreviousColorButton">
+                                    <div class="leftArrow"></div>
+                                </div>
+                                <div id="ColorHolder">
+                                    <div class="dotBorder">
+                                        <div id="PlayerColorCircle">
+
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="arrowHolder" id="NextColorButton">
+                                    <div class="rightArrow"></div>
+
+                                </div>
+                            </div>
+                            <div id="PlayerAvatarHolder">
+                                <div class="arrowHolder" id="PreviousAvatarButton">
+                                    <div class="leftArrow"></div>
+                                </div>
+                                <div class="avatarHolder">
+                                    <div id="AvatarImage"></div>
+                                </div>
+                                <div class="arrowHolder" id="NextAvatarButton">
+                                    <div class="rightArrow"></div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </div>
+                    <div id="StartGameButtonHolder" class="normalButtonHolder">
+                        <div class="normalButtonBackground">Start game</div>
+                    </div>
+                    <div class="customizePlayerLine" id="OrTextHolder">
+                        <div class="customizeLineHolderOr">
+                            <div class="line"></div>
+                        </div>
+                        <div id="OrText"></div>
+                        <div class="customizeLineHolderOr">
+                            <div class="line"></div>
+                        </div>
+                    </div>
+                    <div id="LogoutButton" class="normalButtonHolder">
+                        <div class="normalButtonBackground">
+                            Sign-out
+                        </div>
+                    </div>
+                    <div id="FacebookSignInButtonHolder" class="normalButtonHolder" onclick="FacebookLogin();">
+                        <div class="normalButtonBackground">
+                            <div class="normalButtonLogo">
+                                <div id="FacebookBtnLogo"></div>
+                            </div>
+                            Sign-in with facebook
+                        </div>
+                    </div>
+                    <div id="GoogleSignInButtonHolder" class="normalButtonHolder customGPlusSignIn">
+                        <div class="normalButtonBackground">
+                            <div class="normalButtonLogo">
+                                <div id="GoogleBtnLogo"></div>
+                            </div>
+                            Sign-in with google
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="MiddleSide">
+                <div id="MiddleSideLine">
+
+                </div>
+            </div>
+            <div id="RightSide">
+                <div class="rightSideElementsHolder" id="TutorialAndShareButtonsHolder">
+                    <div id="HowToPlayButtonHolder" class="normalButtonHolder">
+                        <div class="normalButtonBackground">how to play</div>
+                    </div>
+                    <div id="HowToPlayImage"></div>
+                    <div id="FbTwitterPromoHolder">
+                        <div id="FbTwitterPromoImage"></div>
+                    </div>
+                    <div id="ShareButtonsHolder">
+                        <div id="FacebookShareButton" class="shareButton">
+                            <div class="shareButtonLogo" id="FbShareLogo"></div>
+                            <div class="shareButtonBackground">Share</div>
+                        </div>
+                        <div id="TwitterFollowButton" class="shareButton">
+                            <div class="shareButtonLogo" id="TwitterFollowLogo"></div>
+                            <div class="shareButtonBackground">Follow</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="rightSideElementsHolder" id="InviteElementsHolder">
+                    <div id="ComingSoonImage">
+                        Coming soon!
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="InventoryScreen">
+            <div id="InventoryElementsHolder">
+                <div id="InventoryTitle">Item Storage
+                    <div class="inventoryTitleLine"></div>
+                </div>
+
+                <div id="InventoryButtonsHolder">
+                    <div class="inventoryButton" id="InventoryCues">POOL CUES
+                        <div class="inventoryButtonLogo"></div>
+                    </div>
+                    <div class="inventoryButton" id="InventoryAvatars">AVATARS
+                        <div class="inventoryButtonLogo"></div>
+                    </div>
+                    <div class="inventoryButton" id="InventoryDecals">DECALS
+                        <div class="inventoryButtonLogo"></div>
+                    </div>
+                    <div class="inventoryButton" id="InventoryGoalies">GOALIES
+                        <div class="inventoryButtonLogo"></div>
+                    </div>
+                    <div class="inventoryButton" id="InventoryMisc">MISC
+                        <div class="inventoryButtonLogo"></div>
+                    </div>
+                </div>
+                <div id="ItemPanel">
+                    <div id="ItemInfoHolder">
+                        <div id="ItemAvatarAndName">
+                            <div id="ItemAvatar">
+                                <div class="inventoryItemBox inventoryAvatarBox">
+                                    <div class="inventoryItemBoxBackground" id="InventoryBigAvatar"></div>
+                                </div>
+                            </div>
+                            <div id="ItemNameHolder">
+                                <div class="inventoryTitleLine inventoryTitleLineMobile"></div>
+                                <div id="ItemNameText">Item Name</div>
+                                <div class="inventoryTitleLine inventoryTitleLineMobile"></div>
+                            </div>
+                        </div>
+
+                        <div id="ItemDescription">
+                            <div class="itemDescriptionName">OBTAINED</div>
+                            <div class="itemDescriptionValue">OBTAINED DATE</div>
+                            <div class="itemDescriptionName">VALUE</div>
+                            <div class="itemDescriptionValue">ITEM VALUE</div>
+                            <div class="itemDescriptionName">USAGE</div>
+                            <div class="itemDescriptionValue">ITEM USAGE</div>
+                        </div>
+                        <div class="inventoryTitleLine itemDescriptionTitleLine"></div>
+
+                        <div id="EquipButtonWrapper">
+                            <div id="EquipButtonHolder">
+                                <div id="" class="normalButtonHolder equipButtonHolder">
+                                    <div class="normalButtonBackground equipButtonBackground">Equip</div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div id="ItemsHolderWrapper">
+                        <div id="ItemsHolder">
+                            <div class="itemsColumn">
+                                <div class="inventoryItemBox">
+                                    <div class="inventoryItemBoxBackground">
+                                        <div class="inventoryItemBoxSelected"></div>
+                                        <div class="inventoryItemBoxLocked"></div>
+                                    </div>
+                                </div>
+                                <div class="inventoryItemBox">
+                                    <div class="inventoryItemBoxBackground">
+                                        <div class="inventoryItemBoxSelected"></div>
+                                        <div class="inventoryItemBoxLocked"></div>
+                                    </div>
+                                </div>
+                                <div class="inventoryItemBox">
+                                    <div class="inventoryItemBoxBackground">
+                                        <div class="inventoryItemBoxSelected"></div>
+                                        <div class="inventoryItemBoxLocked"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="itemsColumn">
+                                <div class="inventoryItemBox">
+                                    <div class="inventoryItemBoxBackground">
+                                        <div class="inventoryItemBoxSelected"></div>
+                                        <div class="inventoryItemBoxLocked"></div>
+                                    </div>
+                                </div>
+                                <div class="inventoryItemBox">
+                                    <div class="inventoryItemBoxBackground">
+                                        <div class="inventoryItemBoxSelected"></div>
+                                        <div class="inventoryItemBoxLocked"></div>
+                                    </div>
+                                </div>
+                                <div class="inventoryItemBox">
+                                    <div class="inventoryItemBoxBackground">
+                                        <div class="inventoryItemBoxSelected"></div>
+                                        <div class="inventoryItemBoxLocked"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="itemsColumn">
+                                <div class="inventoryItemBox">
+                                    <div class="inventoryItemBoxBackground">
+                                        <div class="inventoryItemBoxSelected"></div>
+                                        <div class="inventoryItemBoxLocked"></div>
+                                    </div>
+                                </div>
+                                <div class="inventoryItemBox">
+                                    <div class="inventoryItemBoxBackground">
+                                        <div class="inventoryItemBoxSelected"></div>
+                                        <div class="inventoryItemBoxLocked"></div>
+                                    </div>
+                                </div>
+                                <div class="inventoryItemBox">
+                                    <div class="inventoryItemBoxBackground">
+                                        <div class="inventoryItemBoxSelected"></div>
+                                        <div class="inventoryItemBoxLocked"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="itemsColumn">
+                                <div class="inventoryItemBox">
+                                    <div class="inventoryItemBoxBackground">
+                                        <div class="inventoryItemBoxSelected"></div>
+                                        <div class="inventoryItemBoxLocked"></div>
+                                    </div>
+                                </div>
+                                <div class="inventoryItemBox">
+                                    <div class="inventoryItemBoxBackground">
+                                        <div class="inventoryItemBoxSelected"></div>
+                                        <div class="inventoryItemBoxLocked"></div>
+                                    </div>
+                                </div>
+                                <div class="inventoryItemBox">
+                                    <div class="inventoryItemBoxBackground">
+                                        <div class="inventoryItemBoxSelected"></div>
+                                        <div class="inventoryItemBoxLocked"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="itemsColumn">
+                                <div class="inventoryItemBox">
+                                    <div class="inventoryItemBoxBackground">
+                                        <div class="inventoryItemBoxSelected"></div>
+                                        <div class="inventoryItemBoxLocked"></div>
+                                    </div>
+                                </div>
+                                <div class="inventoryItemBox">
+                                    <div class="inventoryItemBoxBackground">
+                                        <div class="inventoryItemBoxSelected"></div>
+                                        <div class="inventoryItemBoxLocked"></div>
+                                    </div>
+                                </div>
+                                <div class="inventoryItemBox">
+                                    <div class="inventoryItemBoxBackground">
+                                        <div class="inventoryItemBoxSelected"></div>
+                                        <div class="inventoryItemBoxLocked"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="itemsColumn">
+                                <div class="inventoryItemBox">
+                                    <div class="inventoryItemBoxBackground">
+                                        <div class="inventoryItemBoxSelected"></div>
+                                        <div class="inventoryItemBoxLocked"></div>
+                                    </div>
+                                </div>
+                                <div class="inventoryItemBox">
+                                    <div class="inventoryItemBoxBackground">
+                                        <div class="inventoryItemBoxSelected"></div>
+                                        <div class="inventoryItemBoxLocked"></div>
+                                    </div>
+                                </div>
+                                <div class="inventoryItemBox">
+                                    <div class="inventoryItemBoxBackground">
+                                        <div class="inventoryItemBoxSelected"></div>
+                                        <div class="inventoryItemBoxLocked"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="itemsColumn">
+                                <div class="inventoryItemBox">
+                                    <div class="inventoryItemBoxBackground">
+                                        <div class="inventoryItemBoxSelected"></div>
+                                        <div class="inventoryItemBoxLocked"></div>
+                                    </div>
+                                </div>
+                                <div class="inventoryItemBox">
+                                    <div class="inventoryItemBoxBackground">
+                                        <div class="inventoryItemBoxSelected"></div>
+                                        <div class="inventoryItemBoxLocked"></div>
+                                    </div>
+                                </div>
+                                <div class="inventoryItemBox">
+                                    <div class="inventoryItemBoxBackground">
+                                        <div class="inventoryItemBoxSelected"></div>
+                                        <div class="inventoryItemBoxLocked"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="itemsColumn">
+                                <div class="inventoryItemBox">
+                                    <div class="inventoryItemBoxBackground">
+                                        <div class="inventoryItemBoxSelected"></div>
+                                        <div class="inventoryItemBoxLocked"></div>
+                                    </div>
+                                </div>
+                                <div class="inventoryItemBox">
+                                    <div class="inventoryItemBoxBackground">
+                                        <div class="inventoryItemBoxSelected"></div>
+                                        <div class="inventoryItemBoxLocked"></div>
+                                    </div>
+                                </div>
+                                <div class="inventoryItemBox">
+                                    <div class="inventoryItemBoxBackground">
+                                        <div class="inventoryItemBoxSelected"></div>
+                                        <div class="inventoryItemBoxLocked"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <div id="WalletAndItemsButtonsHolder">
+                    <div id="WalletHolder">
+                        <div id="WalletCoinsLogo">
+
+                        </div>
+                        <div id="WalletCoinsValue">
+                            10.000.000
+                        </div>
+                        <div class="module"></div>
+                    </div>
+                    <div id="ItemsButtonsHolder">
+                        <div id="ItemsPrevButton" class="itemsArrows">
+                            <div class="normalButtonHolder inventoryNormalButtonHolder">
+                                <div class="normalButtonBackground">
+                                    <div id="ItemsPrevButtonArrow" class="buttonArrow"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="ItemsNextButton" class="itemsArrows">
+                            <div class="normalButtonHolder inventoryNormalButtonHolder">
+                                <div class="normalButtonBackground">
+                                    <div id="ItemsNextButtonArrow" class="buttonArrow"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="LeaderBoardScreen">
+            <div id="LeaderBoardElementsHolder">
+
+                <div id="LeaderBoardTitle">
+                    <div id="LeaderboardLogo"></div>
+                    ALL STARS LEADERBOARD
+                    <div class="inventoryTitleLine" id="LeaderBoardTitleLine"></div>
+                </div>
+                <div id="LeaderBoardRankings">
+                    <div id="LeaderboardRowsHolder">
+                        <div id="LeaderBoardColumnTitles" class="leaderBoardRow">
+                            <div class="leaderBoardTitleCell leaderBoardPlaceCell">PLACE</div>
+                            <div class="leaderBoardTitleCell leaderBoardNameCell">NAME</div>
+                            <div class="leaderBoardTitleCell leaderBoardHighscoreCell">HIGH SCORE</div>
+                            <div class="leaderBoardTitleCell leaderBoardRatingCell">RATING</div>
+                            <div class="leaderBoardTitleCell leaderBoardPlaytimeCell">PLAYTIME</div>
+                        </div>
+                        <div class="leaderBoardRow">
+                            <div class="normalCell leaderBoardPlaceCell">1st</div>
+                            <div class="normalCell leaderBoardNameCell">first nickname</div>
+                            <div class="normalCell leaderBoardHighscoreCell">10.000.000</div>
+                            <div class="normalCell leaderBoardRatingCell">5 stars</div>
+                            <div class="normalCell leaderBoardPlaytimeCell">122 hours</div>
+                        </div>
+                        <div class="leaderBoardRow">
+                            <div class="normalCell leaderBoardPlaceCell">2nd</div>
+                            <div class="normalCell leaderBoardNameCell">first nickname</div>
+                            <div class="normalCell leaderBoardHighscoreCell">8.000.000</div>
+                            <div class="normalCell leaderBoardRatingCell">5 stars</div>
+                            <div class="normalCell leaderBoardPlaytimeCell">122 hours</div>
+                        </div>
+                        <div class="leaderBoardRow">
+                            <div class="normalCell leaderBoardPlaceCell">3rd</div>
+                            <div class="normalCell leaderBoardNameCell">first nickname</div>
+                            <div class="normalCell leaderBoardHighscoreCell">8.000.000</div>
+                            <div class="normalCell leaderBoardRatingCell">5 stars</div>
+                            <div class="normalCell leaderBoardPlaytimeCell">122 hours</div>
+                        </div>
+                        <div class="leaderBoardRow">
+                            <div class="normalCell leaderBoardPlaceCell">4th</div>
+                            <div class="normalCell leaderBoardNameCell">first nickname</div>
+                            <div class="normalCell leaderBoardHighscoreCell">7.000.000</div>
+                            <div class="normalCell leaderBoardRatingCell">5 stars</div>
+                            <div class="normalCell leaderBoardPlaytimeCell">122 hours</div>
+                        </div>
+                        <div class="leaderBoardRow">
+                            <div class="normalCell leaderBoardPlaceCell">5th</div>
+                            <div class="normalCell leaderBoardNameCell">first nickname</div>
+                            <div class="normalCell leaderBoardHighscoreCell">6.000.000</div>
+                            <div class="normalCell leaderBoardRatingCell">5 stars</div>
+                            <div class="normalCell leaderBoardPlaytimeCell">122 hours</div>
+                        </div>
+                        <div class="leaderBoardRow">
+                            <div class="normalCell leaderBoardPlaceCell">6th</div>
+                            <div class="normalCell leaderBoardNameCell">first nickname</div>
+                            <div class="normalCell leaderBoardHighscoreCell">5.000.000</div>
+                            <div class="normalCell leaderBoardRatingCell">5 stars</div>
+                            <div class="normalCell leaderBoardPlaytimeCell">122 hours</div>
+                        </div>
+                        <div class="leaderBoardRow">
+                            <div class="normalCell leaderBoardPlaceCell">7th</div>
+                            <div class="normalCell leaderBoardNameCell">first nickname</div>
+                            <div class="normalCell leaderBoardHighscoreCell">4.000.000</div>
+                            <div class="normalCell leaderBoardRatingCell">5 stars</div>
+                            <div class="normalCell leaderBoardPlaytimeCell">122 hours</div>
+                        </div>
+                        <div class="leaderBoardRow">
+                            <div class="normalCell leaderBoardPlaceCell">8th</div>
+                            <div class="normalCell leaderBoardNameCell">first nickname</div>
+                            <div class="normalCell leaderBoardHighscoreCell">3.000.000</div>
+                            <div class="normalCell leaderBoardRatingCell">5 stars</div>
+                            <div class="normalCell leaderBoardPlaytimeCell">122 hours</div>
+                        </div>
+                        <div class="leaderBoardRow">
+                            <div class="normalCell leaderBoardPlaceCell">9th</div>
+                            <div class="normalCell leaderBoardNameCell">first nickname</div>
+                            <div class="normalCell leaderBoardHighscoreCell">2.000.000</div>
+                            <div class="normalCell leaderBoardRatingCell">5 stars</div>
+                            <div class="normalCell leaderBoardPlaytimeCell">122 hours</div>
+                        </div>
+                        <div class="leaderBoardRow">
+                            <div class="normalCell leaderBoardPlaceCell">10th</div>
+                            <div class="normalCell leaderBoardNameCell">first nickname</div>
+                            <div class="normalCell leaderBoardHighscoreCell">1.000.000</div>
+                            <div class="normalCell leaderBoardRatingCell">5 stars</div>
+                            <div class="normalCell leaderBoardPlaytimeCell">122 hours</div>
+                        </div>
+
+                    </div>
+                </div>
+                <div id="PlayerRank">
+                    <div id="PlayerBoardColumnTitles" class="leaderBoardRow">
+                        <div class="playerBoardTitleCell leaderBoardPlaceCell">112th</div>
+                        <div class="playerBoardTitleCell leaderBoardNameCell">sandru andrei</div>
+                        <div class="playerBoardTitleCell leaderBoardHighscoreCell">80.000</div>
+                        <div class="playerBoardTitleCell leaderBoardRatingCell">VII</div>
+                        <div class="playerBoardTitleCell leaderBoardPlaytimeCell">14 hours</div>
+                    </div>
+                </div>
+            </div>
+
+            <div></div>
+        </div>
+    </div>
+
+
+</div>
+<script>startApp();
+
+document.getElementById('LogoutButton').addEventListener("PockeyGoogleSignOutEvent", signOut);
+
+function signOut() {
+    console.log("intra la signout macar atat");
+
+    /* let auth2 = gapi.auth2.getAuthInstance();
+     auth2.signOut().then(function () {
+         console.log('google User signed out.');
+         let pockeyEvent = new Event('PockeyGoogleSignedOutEvent');
+         document.getElementById('LogoutButton').dispatchEvent(pockeyEvent);
+     });
+
+     FB.logout(function (response) {
+         // Person is now logged out
+         console.log('facebook User signed out.');
+
+         let pockeyEvent = new Event('PockeyFacebookSignedOutEvent');
+         document.getElementById('LogoutButton').dispatchEvent(pockeyEvent);
+     });*/
+}
+</script>
+
+<div id="SearchingScreen">
+    <div class="searchingAnimation">
+        <div class="searchtext">SEARCHING FOR OPPONENT</div>
+    </div>
+</div>
+<div id="ScoreBoard">
+    <div class="playerScoreBoard" id="PlayerScoreBoardLeft">
+        <div class="scoreBoardAvatar" id="ScoreBoardAvatarLeft">
+            <div class="scoreBoardTimer" id="ScoreBoardTimerLeft">0:00</div>
+        </div>
+        <div class="scoreBoardRankSymbol" id="ScoreBoardRankSymbolLeft"></div>
+        <div class="scoreBoardName" id="ScoreBoardNameLeft">
+            <div class="playerName">SANDRU test</div>
+            <div class="scoreBoardLives" id="ScoreBoardLivesLeft">
+                <div class="scoreBoardLivesElement"></div>
+                <div class="scoreBoardLivesElement"></div>
+                <div class="scoreBoardLivesElement"></div>
+                <div class="scoreBoardLivesElement"></div>
+                <div class="scoreBoardLivesElement"></div>
+                <div class="scoreBoardLivesElement"></div>
+                <div class="scoreBoardLivesElement"></div>
+            </div>
+        </div>
+
+    </div>
+    <div id="ScoreBoardVersusDiv">
+        <div class="scoreBoardPlayerRounds" id="ScoreBoardPlayerRoundsLeft">
+            <div class="dotBorderScoreBoard">
+                <span class="dorScoreBoard"></span>
+            </div>
+            <div class="dotBorderScoreBoard">
+                <span class="dorScoreBoard"></span>
+            </div>
+        </div>
+        <div class="scoreBoardPlayerRounds" id="ScoreBoardPlayerRoundsRight">
+            <div class="dotBorderScoreBoard">
+                <span class="dorScoreBoard"></span>
+            </div>
+            <div class="dotBorderScoreBoard">
+                <span class="dorScoreBoard"></span>
+            </div>
+        </div>
+    </div>
+    <div class="playerScoreBoard" id="PlayerScoreBoardRight">
+        <div class="scoreBoardAvatar" id="ScoreBoardAvatarRight">
+            <div class="scoreBoardTimer" id="ScoreBoardTimerRight">0:00</div>
+        </div>
+        <div class="scoreBoardRankSymbol" id="ScoreBoardRankSymbolRight"></div>
+        <div class="scoreBoardName" id="ScoreBoardNameRight">
+            <div class="playerName">SANDRU test</div>
+            <div class="scoreBoardLives" id="ScoreBoardLivesRight">
+                <div class="scoreBoardLivesElement"></div>
+                <div class="scoreBoardLivesElement"></div>
+                <div class="scoreBoardLivesElement"></div>
+                <div class="scoreBoardLivesElement"></div>
+                <div class="scoreBoardLivesElement"></div>
+                <div class="scoreBoardLivesElement"></div>
+                <div class="scoreBoardLivesElement"></div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div id="RoundCompleteScreen" class="roundScreen">
+    <div id="RoundCompleteTitle" class="screenTitle">Round complete</div>
+    <div id="RoundCompletePlayers" class="screenPlayers">
+        <div class="roundCompletePlayersHolder">
+            <div class="roundCompletePlayer">
+                <div class="roundCompletePlayerNameAndAvatarHolder">
+                    <div class="avatarHolder roundCompletePlayerAvatarHolder">
+                        <div class="avatarImage"></div>
+                    </div>
+                    <div class="roundCompletePlayerNameRankAndStatusHolder">
+                        <div class="roundCompletePlayerNameAndRank">
+                            <div class="roundCompletePlayerRank"></div>
+                            <div class="roundCompletePlayerNameHolder">
+                                <div class="roundCompletePlayerName">player name</div>
+                                <div class="roundCompletePlayerLogStatus">Guest</div>
+                                <div class="roundCompletePlayerLine">
+                                    <div class="line"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="playerStatus">Win</div>
+
+                    </div>
+                </div>
+                <div class="roundCompletePlayerStatsHolder">
+                    <div class="mainMenuRankingCircle">
+                        <div class="mainMenuRankingText">Wins</div>
+                    </div>
+                    <div class="mainMenuRankingCircle">
+                        <div class="mainMenuRankingText">Losses</div>
+                    </div>
+                    <div class="mainMenuRankingCircle">
+                        <div class="mainMenuRankingText">Streak</div>
+                    </div>
+                    <div class="mainMenuRankingCircle">
+                        <div class="mainMenuRankingText">Fouls</div>
+                    </div>
+                </div>
+            </div>
+            <div class="roundCompletePlayer">
+                <div class="roundCompletePlayerNameAndAvatarHolder screenPlayerNameAndAvatarHolderRight"
+                     id="RoundCompletePlayerNameAndAvatarHolderRight">
+                    <div class="avatarHolder roundCompletePlayerAvatarHolder">
+                        <div class="avatarImage"></div>
+                    </div>
+                    <div class="roundCompletePlayerNameRankAndStatusHolder roundCompletePlayerNameRankAndStatusHolderRight"
+                         id="RoundCompletePlayerNameRankAndStatusHolderRight">
+                        <div class="roundCompletePlayerNameAndRank screenPlayerNameAndRankRight"
+                             id="RoundCompletePlayerNameAndRankRight">
+                            <div class="roundCompletePlayerRank"></div>
+                            <div class="roundCompletePlayerNameHolder screenPlayerNameHolderRight"
+                                 id="RoundCompletePlayerNameHolderRight">
+                                <div class="roundCompletePlayerName">player name</div>
+                                <div class="roundCompletePlayerLogStatus">Guest</div>
+                                <div class="roundCompletePlayerLine">
+                                    <div class="line"></div>
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="playerStatus">Win</div>
+
+                    </div>
+                </div>
+                <div class="roundCompletePlayerStatsHolder">
+                    <div class="mainMenuRankingCircle">
+                        <div class="mainMenuRankingText">Wins</div>
+                    </div>
+                    <div class="mainMenuRankingCircle">
+                        <div class="mainMenuRankingText">Losses</div>
+                    </div>
+                    <div class="mainMenuRankingCircle">
+                        <div class="mainMenuRankingText">Streak</div>
+                    </div>
+                    <div class="mainMenuRankingCircle">
+                        <div class="mainMenuRankingText">Fouls</div>
+                    </div>
+                </div>
+            </div>
+            <div id="RoundCompleteGraphics" class="screenGraphics">
+                <div id="RoundCompleteMatchBanner" class="screenBanner"></div>
+                <div id="RoundCompleteVS" class="screenVS"></div>
+                <div id="RoundCompleteRoundNumber" class="screenRoundNumber"></div>
+            </div>
+        </div>
+        <div id="RoundCompleteBottomText" class="screenBottomText">
+            <div class="roundCompleteLineHolder">
+                <div class="line"></div>
+            </div>
+
+            <div class="screenBottomHolder">
+                <div id="RoundCompleteText" class="screenText">playa disconnected</div>
+                <div id="ScreenMainMenuButton" class="screenButton">main menu</div>
+                <div id="ScreenRematchButton" class="screenButton">rematch</div>
+                <div id="ScreenNewOpponentButton" class="screenButton">new opponent</div>
+            </div>
+
+            <div class="roundCompleteLineHolder">
+                <div class="line"></div>
+            </div>
+        </div>
+    </div>
+    <div id="RematchAsked" class="screenTitle">
+        <div id="RematchText">
+            your opponent wants revenge:
+        </div>
+        <div id="RematchYes" class="screenButton">
+            YES
+        </div>
+        <div id="RematchNo" class="screenButton">
+            NO
+        </div>
+    </div>
+</div>
+
+<div id="PlayerFoundScreen">
+    <div id="PlayerFoundTitleAndImageHolder">
+        <div id="PlayerFoundImage"></div>
+        <div id="PlayerFoundTitle">OPPONENT FOUND</div>
+        <div id="PlayerFoundSubitle">RACKING DEEZ BALLS</div>
+    </div>
+    <div id="PlayerFoundOpponentHolder">
+        <div id="PlayerFoundOpponentAvatarAndStats">
+            <div class="avatarHolder" id="OpponentAvatarImage">
+                <div class="avatarImage"></div>
+            </div>
+            <div id="PlayerFoundStats">
+                <div id="PlayerFoundRankAndName">
+                    <div id="PlayerFoundRankImage"></div>
+                    <div id="PlayerFoundNameAndRankTitle">
+                        <div id="PlayerFoundName">OPPONENT NAME</div>
+                        <div id="PlayerFoundRankTitle">Noobie</div>
+                        <div id="PlayerFoundLine">
+                            <div class="line"></div>
+                        </div>
+                    </div>
+                </div>
+                <div id="PlayerFoundWinLost">
+                    <div class="playerFoundWinLoss" id="PlayerFoundWin">
+                        <div>Win</div>
+                        <div id="PlayerFoundWinsNumber" class="playerFoundNumber">10</div>
+                    </div>
+                    <div class="playerFoundWinLoss" id="PlayerFoundLost">
+                        <div>LOST</div>
+                        <div id="PlayerFoundLostNumber" class="playerFoundNumber">5</div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <div id="RoundOneStartsText"></div>
+
+</div>
+<div id="TipText">
+    <div id="SpansHolder">
+
+    </div>
+</div>
+<!--<canvas id="renderCanvas"></canvas>-->
+
+<!--//preloader-->
+<canvas id="preloaderCanvas" width="626" height="734"></canvas>
+<script src="./transpiled/main.js"></script>
+
+<canvas id="renderCanvas" width="626" height="734"></canvas>
+<div id="preloaderScript">
+    <script>
+        //Frame setup - Twist / Grim / Zanz / kidComet
+        //Don't worry about the frame stuff. The main frame stuff you'll need to use are:
+        //FRAME.scaleY and FRAME.scaleX. It's essentially the scaling in here. Often something like
+        //(FRAME.y - window.innerHeight/2)/FRAME.scaleY;
+        //If you're gonna add stuff, make sure it scales somehow with FRAME.
+        let FRAME = {
+            ctx: null,
+            canvas: null,
+            game_width: 0,
+            game_height: 0,
+            scaleX: 1,
+            scaleY: 1,
+            x: 0,
+            y: 0,
+            images: new Map()
+        };
+        FRAME.resize = function () {
+            let stageWidth = window.innerWidth;
+            let stageHeight = window.innerHeight;
+
+            let ratio = stageWidth / stageHeight;
+
+            if (ratio > FRAME.game_width / FRAME.game_height) {
+                FRAME.scaleY = FRAME.scaleX = stageHeight / FRAME.game_height;
+            } else {
+                FRAME.scaleX = FRAME.scaleY = stageWidth / FRAME.game_width;
+            }
+            if (stageWidth > 1000) FRAME.scaleX = FRAME.scaleY;
+
+            FRAME.canvas.width = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+            FRAME.canvas.height = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+        };
+        FRAME.init = function (w, h, canvas) {
+            FRAME.game_width = w;
+            FRAME.game_height = h;
+            FRAME.canvas = canvas;
+            FRAME.ctx = canvas.getContext("2d");
+
+            window.addEventListener('resize', FRAME.resize, false);
+            FRAME.resize();
+        };
+        FRAME.clearScreen = function () {
+            FRAME.ctx.setTransform(FRAME.scaleX, 0, 0, FRAME.scaleY, FRAME.x, FRAME.y);
+            FRAME.ctx.clearRect(-FRAME.x / FRAME.scaleX, -FRAME.y / FRAME.scaleY, window.innerWidth / FRAME.scaleX, window.innerHeight / FRAME.scaleY);
+        };
+        FRAME.loadImage = function (path, name) {
+            let img = new Image();
+            img.src = path;
+            img.key = name;
+            FRAME.images.set(name, img);
+        };
+        FRAME.getImage = function (name) {
+            return FRAME.images.get(name);
+        };
+
+        requestFrame = (window.requestAnimationFrame || window.webkitRequestAnimationFrame || window.mozRequestAnimationFrame ||
+            window.oRequestAnimationFrame || window.msRequestAnimationFrame ||
+            function (callback) {
+                window.setTimeout(callback, 1000 / 60);
+            });
+        //FRAME STUFF ENDS
+
+        //The Actor class is the general none-image class you'll use if you want to add new elements to the scene.
+        //So you'll do class MyElement extends Actor()
+        //Your new class will need a constructor function, a render function, and a draw function.
+        //You'll have to call all of these functions I.E MyElement.draw at the end of the script. I'll comment that portion too.
+        class Actor {
+            //The function that essentially creates the base for the element
+            constructor(x, y, rot, ctx) {
+                this.age = 0;
+                this.ctx = ctx || FRAME.ctx;
+                this.x = x || 0;
+                this.y = y || 0;
+                this.rotation = rot || 0.0;
+            }
+
+            //Render is where actual paths and stuff are rendered. Put all of your actual art/elements in here.
+            render() {
+            }
+
+            //You don't add draw to your function, instead you just call it elsewhere.
+            draw() {
+                this.ctx.translate(this.x, this.y);
+                this.ctx.rotate(this.rotation);
+                this.render();
+                this.ctx.rotate(-this.rotation);
+                this.ctx.translate(-this.x, -this.y);
+            }
+
+            //YOU DO want to add update in your function. Call update for things that need to change every frame. So animation/incremental variables would be defined here.
+            update(deltaTime) {
+                this.age += deltaTime;
+            }
+        }
+
+        //Same as Actor, but for images/svgs
+        class ImageActor extends Actor {
+            constructor(x, y, img, size = 1) {
+                super(x, y);
+
+                this.image = img;
+                this.width = this.image.width * size;
+                this.height = this.image.height * size;
+            }
+
+            render() {
+                this.ctx.drawImage(this.image, -this.width / 2, -this.height / 2, this.width, this.height);
+            }
+        }
+
+        //Not 100% sure to be honest. Haven't needed it. It's used for stars though.
+        class Collection {
+            constructor(ctx) {
+                this.objects = [];
+                this.x = 0;
+                this.y = 0;
+                this.rotation = 0;
+                this.ctx = ctx || FRAME.ctx;
+            }
+
+            add(obj) {
+                this.objects.push(obj);
+            }
+
+            remove(obj) {
+                let index = this.objects.indexOf(obj);
+                if (index != -1) {
+                    this.objects.splice(index, 1);
+                }
+            }
+
+            clear() {
+                this.objects.splice(0, this.objects.length);
+            }
+
+            update(deltaTime) {
+                for (let i = 0; i < this.objects.length; i++) {
+                    this.objects[i].update(deltaTime);
+                    if (this.objects[i].dead !== undefined && this.objects[i].dead === true) {
+                        this.remove(this.objects[i]);
+                        i--;
+                    }
+                }
+            }
+
+            draw() {
+                for (let i = 0; i < this.objects.length; i++) {
+                    this.ctx.translate(this.x, this.y);
+                    this.ctx.rotate(this.rotation);
+                    this.objects[i].draw();
+                    this.ctx.rotate(-this.rotation);
+                    this.ctx.translate(-this.x, -this.y);
+                }
+            }
+        }
+
+        //Used for the text. Pretty self explanitory
+        class Text {
+            constructor(x, y, text, font, fillStyle, fontsize, justify, rot, ctx) {
+                this.x = x || 0;
+                this.y = y || 0;
+                this.text = text || "";
+                this.font = font || "Arial";
+                this.fillStyle = fillStyle || "#333";
+                this.fontsize = fontsize || 30;
+                this.justify = justify || "left";
+                this.rotation = rot || 0;
+                this.ctx = ctx || FRAME.ctx;
+
+                this.ctx.font = this.fontsize + "px " + this.font;
+                this.width = this.ctx.measureText(this.text).width;
+
+                this.update = function (deltaTime) {
+                };
+                this.render = function () {
+                };
+                this.draw = function () {
+                    this.ctx.translate(this.x, this.y);
+                    this.ctx.rotate(this.rotation);
+                    this.ctx.font = this.fontsize + "px " + this.font;
+                    this.ctx.fillStyle = this.fillStyle;
+                    this.width = this.ctx.measureText(this.text).width;
+                    this.render();//whatever extra stuff
+                    if (this.justify == "left") {
+                        this.ctx.fillText(this.text, 0, this.fontsize);
+                    } else if (this.justify == "right") {
+                        this.ctx.fillText(this.text, -this.width, this.fontsize);
+                    } else {
+                        this.ctx.fillText(this.text, -this.width / 2, this.fontsize);
+                    }
+                    this.ctx.rotate(-this.rotation);
+                    this.ctx.translate(-this.x, -this.y);
+                }
+            }
+        }
+
+        //Loading screen stuff
+        //This is how you load images. First is the link, then the name you want to give the link.
+        FRAME.loadImage("https://upload.wikimedia.org/wikipedia/commons/3/30/Vector-based_example.svg", "logo");
+        FRAME.loadImage("http://zackseliger.com/starcade_preloader/star-cross.svg", "star");
+
+        //constants that you might find helpful
+        let MAX_STAR_SIZE = 4;
+        let STAR_COUNT = 600;
+        let STAR_TWINKLE_AMOUNT = .6;
+        let SUN_RADIUS = 150;
+        let LOADING_BAR_WIDTH = 500;
+        let NUM_BARS = 7;
+        let CORONA_START_SIZE = 30;
+        let CORONA_FINAL_SIZE = 50;
+        //the one and only...
+        let loadingProgress = 0;
+
+        //global functions
+        //These are the functions that will update progress
+        function addLoadingProgress(amt) {
+            loadingProgress += amt;
+        }
+
+        function getLoadingProgress() {
+            return loadingProgress;
+        }
+
+        function setLoadingProgress(a) {
+            loadingProgress = a;
+        }
+
+        function isGameReady() {
+            return loadingProgress >= 1;
+        }
+
+        //The horizon
+        class MountainBottom extends Actor {
+            constructor() {
+                super(); //super() is REQUIRED in the constructor. Without it, nothing will work. Always add it. **Parallax???
+                //settings
+                this.glowSize = 70;
+
+                //inner glow gradient
+                this.grdInner = this.ctx.createRadialGradient(0, 0, 200, 0, 0, SUN_RADIUS);
+                this.grdInner.addColorStop(0, 'rgb(255, 255, 255,1)');
+                this.grdInner.addColorStop(0.05, 'rgb(100, 255, 255,1)');
+                this.grdInner.addColorStop(0.3, 'rgb(50, 200, 255,0.4)');
+                this.grdInner.addColorStop(0.65, 'rgb(60, 170, 215,0.10)');
+                this.grdInner.addColorStop(1, 'rgb(0, 0, 0,0)');
+
+                //outer glow gradient
+                this.grdOuter = this.ctx.createRadialGradient(3, 5, 210 + this.glowSize, 3, 3, 0);
+                this.grdOuter.addColorStop(0, 'rgb(255,  85, 255, 0.0)');
+                this.grdOuter.addColorStop(0.5, 'rgb( 94, 242, 255, 0.7)');
+                this.grdOuter.addColorStop(0.4, 'rgb( 94, 242, 255, 0.6)');
+            }
+
+            update() {
+                // this.x = (-FRAME.x + window.innerWidth/2)/FRAME.scaleX;
+                //this.y = (-FRAME.y + window.innerHeight)/FRAME.scaleY;///2 - (-window.innerHeight/1.5 - 50);
+                this.x = (-FRAME.x + window.innerWidth / 2) / FRAME.scaleX;
+                this.y = (-FRAME.y + window.innerHeight / 2) / FRAME.scaleY + 620;
+            }
+
+            render() {
+
+                //Since we're modifying the scale and shit, I have to save the current ctx, so I can modify shit, and then restore the ctx the way it was before I fucked it all up.
+                this.ctx.save();
+                this.ctx.scale((window.innerWidth / 720) / FRAME.scaleX * 3.5, 2.5);
+
+                //outer glow
+                this.ctx.fillStyle = this.grdOuter;
+                this.ctx.beginPath();
+                this.ctx.arc(0, 2, 250 + this.glowSize, 0, 1 * Math.PI, true);
+                this.ctx.fill();
+                this.ctx.closePath();
+
+                //The inside of the horizon
+                this.ctx.beginPath();
+                this.ctx.fillStyle = " #0d171c";
+                this.ctx.arc(0, 1, 199, 25, 2 * Math.PI, true);
+                this.ctx.fill();
+                this.ctx.closePath();
+
+                //drawing inner glow
+                this.ctx.fillStyle = this.grdInner;
+                this.ctx.beginPath();
+                this.ctx.arc(0, 0, 200, 0, Math.PI, true);
+                this.ctx.fill();
+                this.ctx.closePath();
+
+                this.ctx.restore();
+            }
+        }
+
+        //The moving lines.
+        class Line extends Actor {
+            constructor() {
+                super(0, SUN_RADIUS);
+                this.topWidth = 0;
+                this.bottomWidth = 0;
+                this.height = 20;
+                this.speed = 1;
+            }
+
+            update() {
+                //decrease speed, height, and y position
+                this.y -= this.speed;
+                this.height -= 0.045;
+                this.speed += (0 - this.speed) * 0.001;
+                if (this.y < -SUN_RADIUS) this.dead = true;//this.dead is a thing in the Collection class...
+
+                //top and bottom of line has to have different widths
+                this.topWidth = 2 * Math.sqrt(Math.pow(SUN_RADIUS, 2) - Math.pow(this.y - this.height / 2, 2));
+                this.bottomWidth = 2 * Math.sqrt(Math.pow(SUN_RADIUS, 2) - Math.pow(this.y + this.height / 2, 2));
+            }
+
+            render() {
+                this.ctx.fillStyle = "#000";
+
+                this.ctx.beginPath();
+                this.ctx.moveTo(-this.topWidth / 2, -this.height / 2);
+                this.ctx.lineTo(this.topWidth / 2, -this.height / 2);
+                this.ctx.lineTo(this.bottomWidth / 2, this.height / 2);
+                this.ctx.lineTo(-this.bottomWidth / 2, this.height / 2);
+                this.ctx.closePath();
+
+                this.ctx.fill();
+            }
+        }
+
+        //Logo in the center. Another image.
+        class Logo extends ImageActor {
+            constructor() {
+                super(0, 0., FRAME.getImage("logo"));
+                this.width *= 0.72; //Change these to change how the logo scales
+                this.height *= 0.72;
+            }
+
+            update() {
+                this.ctx.x = (-FRAME.x + window.innerWidth / 2) / FRAME.scaleX - 145; //These control the location of the logo. If you want to change
+                this.ctx.y = (-FRAME.y + window.innerHeight / 2) / FRAME.scaleY - 150; //position, just change the numbers (143 and 150)
+            }
+
+            render() {
+                this.ctx.drawImage(this.image, this.ctx.x, this.ctx.y, this.width, this.height);
+            }
+        }
+
+        //The back of the logo
+        class Sun extends Actor {
+            constructor() {
+                super();
+                this.rad = 0; //No touchy
+                this.lines = new Collection(); //Still no touchy
+                this.linesTimer = 0;
+
+                this.cycler = 0.0;
+
+                this.gradient = this.ctx.createLinearGradient(30, -SUN_RADIUS, 30, SUN_RADIUS);
+                this.gradient.addColorStop(0.2, "rgb(252, 243, 190)");//These are the sun colors.
+                this.gradient.addColorStop(0.8, "rgb(178, 49, 133)"); //I got them pretty close, so...
+                this.gradient.addColorStop(0.9, "rgb(255, 0, 127)");
+            }
+
+            update() {
+                this.x = (-FRAME.x + window.innerWidth / 2) / FRAME.scaleX; //The location. Try not to touch it unless you have to. You'll have to move
+                this.y = (-FRAME.y + window.innerHeight / 2) / FRAME.scaleY; //A LOT of stuff around if you do.
+                this.lines.update(); //The lines get updated from WITHIN this class
+                this.rad += (SUN_RADIUS - this.rad) * 0.2; //Radius
+
+                //harmonic motion
+                this.cycler += 0.08;
+
+                //countdown to add new line
+                this.linesTimer -= 1;
+                if (this.linesTimer < 0) {
+                    this.linesTimer = 50;
+                    this.lines.add(new Line());
+                }
+            }
+
+            render() {
+                for (let i = 0; i < 5; i++) {
+                    this.ctx.fillStyle = "rgba(50, 230, 250, 0.2)";
+                    this.ctx.beginPath();
+                    this.ctx.arc(0, 0, this.rad + (i + .4) * ((1.5 - loadingProgress) * CORONA_START_SIZE + loadingProgress * CORONA_FINAL_SIZE) + Math.sin(i / 2 - this.cycler) * 5, 0, 2 * Math.PI);
+                    this.ctx.fill();
+                }
+
+                //actual sun
+                this.ctx.fillStyle = this.gradient;
+                this.ctx.beginPath();
+                this.ctx.arc(0, 0, this.rad, 0, 2 * Math.PI);
+                this.ctx.fill();
+
+                // black border
+                this.ctx.strokeStyle = "rgb(0, 0, 0)";
+                this.ctx.lineWidth = 5;
+                this.ctx.stroke();
+
+                //lines
+                this.lines.draw(); //Drawing the lines
+            }
+        }
+
+        //The loading bar. Shocking, right?
+        class LoadingBar extends Actor {
+            constructor() {
+                super();
+                this.progress = 0;//we tween this value to actual loading progress so it looks nice
+                this.loadingText = new Text(0, 200, "LOADING 0%", "denkone", "#00ffd5", 27, "center");//x, y, text, font family...
+                this.timerCountdown = 0; //We initialize the timer countdown at 0 when we initialize the bar
+                //harmonic motion arrays
+                this.extras = [];
+                this.cyclers = [];
+                this.flavorText = ["CONSTRUCTING ADDITIONAL PYLONS ",
+                    "PLAYER ONE NOT READY ",
+                    "PIXELLATING REAL LIFE ",
+                    "DOWNLOADING MORE RAM ",
+                    "PETTING CATS ",
+                    "WHAT WAS I DOING? OH RIGHT ",
+                    "HAVING AN EXISTENTIAL CRISIS "];
+
+                //THIS! This is the array that holds the flavor text. Add to it freely.
+                this.text = Math.floor(Math.random() * this.flavorText.length);
+
+                //Initialize this.text (which is used for the array)
+                for (let i = 0; i < NUM_BARS; i++) {
+                    this.extras.push(0);
+                    this.cyclers.push(i * 2.2);
+                }
+            }
+
+            update() {
+                this.timerCountdown++; //Add one to the timer
+
+                this.x = (-FRAME.x + window.innerWidth / 2) / FRAME.scaleX;
+                this.y = (-FRAME.y + window.innerHeight / 2) / FRAME.scaleY + 190; //You know what this is by now
+
+                //harmonic motion for bars
+                for (let i = 0; i < NUM_BARS; i++) {
+                    this.cyclers[i] -= 0.11;
+                    this.extras[i] = Math.sin(this.cyclers[i]) / 100;
+                }
+
+                //lerp progress variable closer to actual progress
+                if (this.timerCountdown == 110 && this.progress < .99) { //Check that the 110  updates have passed since last text change, and that we're under 99% done
+                    this.text = Math.floor(Math.random() * this.flavorText.length);
+                    this.timerCountdown = 0;
+
+                } else if (this.progress >= 1) {
+                    this.flavorText[0] = "LOADING COMPLETE! ";
+                    this.text = 0;
+                    // FRAME.clearScreen();
+                    // mainCollection.clear();
+                    let preloaderDoneEvent = new Event("preloaderDoneEvent");
+                    document.dispatchEvent(preloaderDoneEvent);
+
+                    let element = document.getElementById("preloaderCanvas");
+                    element.parentNode.removeChild(element);
+
+                    element = document.getElementById("preloaderScript");
+                    element.parentNode.removeChild(element);
+                    // requestFrame = null;
+                    // main = null;
+                }
+
+                this.progress += (loadingProgress - this.progress) * 0.1;
+                if (Math.abs(this.progress - loadingProgress) < 0.0025) {
+                    this.progress = loadingProgress;
+                }
+                this.loadingText.text = this.flavorText[this.text] + Math.floor(this.progress * 100) + "%";
+            }
+
+            render() {
+                this.loadingText.draw();
+                this.ctx.lineCap = "round";
+
+                this.ctx.save();
+                this.ctx.scale((window.innerWidth / 720) / FRAME.scaleX * 3.5, 2.5);
+                //drawing all the lines w/ varying lengths, colors, heights
+                for (let i = 0; i < NUM_BARS; i++) {
+                    this.ctx.lineWidth = (1 - i / NUM_BARS) * 2 + 2;
+                    let alpha = 1.0 - i / NUM_BARS * .9;
+                    this.ctx.strokeStyle = "rgba(0,255,213," + alpha + ")";
+                    this.ctx.beginPath();
+                    let arc = Math.max(.01, this.progress * (.4 + .6 * Math.pow(i / NUM_BARS, .8)) + this.extras[i]);
+                    this.ctx.arc(0, (8 + i / 2) * i + 197, 200, (-.5 - arc / 15 * window.innerHeight / window.innerWidth) * Math.PI, (-.5 + arc / 15 * window.innerHeight / window.innerWidth) * Math.PI);
+                    this.ctx.stroke();
+                }
+                this.ctx.restore();
+            }
+        }
+
+        //What happens when the window loads
+        document.addEventListener("windowLoaded", () => {
+            // alert("muie");
+            FRAME.init(1000, 1000, document.getElementById("preloaderCanvas"));
+
+            //ORDER MATTERS.
+            //Things draw ON TOP of one another, so sun is over starCollection, and logo is over sun and starCollection.
+            //Keep this in mind and add your stuff in the proper order.
+            //NOTE: things in collections are drawn in the order they are added
+            mainCollection = new Collection();
+            mainCollection.add(new Stars());
+            mainCollection.add(new Sun());
+            mainCollection.add(new Logo());
+            mainCollection.add(new MountainBottom());
+            mainCollection.add(new LoadingBar());
+
+            main(); //Run main
+        });
+
+
+        function Star(size, speed) {
+            this.size = size;
+            this.speed = speed;
+            this.x = Math.random() - .5;
+            this.y = Math.random() * .7 - .5;
+        }
+
+        class Stars extends Actor {
+            constructor() {
+                super();
+                this.stars = [];
+                for (let i = 0; i < STAR_COUNT; i++) {
+                    let size = Math.random();
+                    this.stars.push(new Star(size * MAX_STAR_SIZE, size * .0005 + .00005));
+                }
+            }
+
+            update() {
+                for (let o in this.stars) {
+                    let star = this.stars[o];
+                    star.y -= star.speed;
+                    if (star.y < -.5) {
+                        star.y = .7 - .5;
+                    }
+                    star.size = Math.max(.1, Math.min(MAX_STAR_SIZE, star.size + (Math.random() - .5) * STAR_TWINKLE_AMOUNT));
+                }
+                this.x = (-FRAME.x + window.innerWidth / 2) / FRAME.scaleX;
+                this.y = (-FRAME.y + window.innerHeight / 2) / FRAME.scaleY;
+            }
+
+            render() {
+                this.ctx.fillStyle = "#90fff3";
+                for (let o in this.stars) {
+                    let star = this.stars[o];
+                    let starX = (star.x * window.innerWidth / FRAME.scaleX);
+                    let starY = (star.y * window.innerHeight / FRAME.scaleY);
+                    this.ctx.fillRect(starX, starY, star.size, star.size);
+                }
+            }
+        }
+
+        function main() {
+            FRAME.clearScreen(); //Refresh the screen. CLEAR THEM PIXELS, BOI
+
+            //update crap
+            mainCollection.update();
+
+            //draw crap
+            mainCollection.draw();
+
+
+            requestFrame(main);
+        }
+
+        document.addEventListener("progress", (e) => {
+            console.log("progressu: " + e.detail);
+            //pretend to load something
+            addLoadingProgress(e.detail);
+            if (getLoadingProgress() > 1) {
+                setLoadingProgress(1);
+            }
+        });
+
+
+    </script>
+</div>
+
+<script>window.onload = function () {
+    let event = new Event('windowLoaded');
+    document.dispatchEvent(event);
+}
+</script>
+<!--//end preloader-->
+</body>
+</html>
