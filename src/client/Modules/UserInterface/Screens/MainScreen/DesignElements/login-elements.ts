@@ -48,7 +48,7 @@ export class LoginElements {
     }
 
     private onInventoryItemUpdated(): void {
-        if (PockeyPlayerManager.Instance().player.data.nickname != "" && (this.inputText as HTMLTextAreaElement).value != PockeyPlayerManager.Instance().player.data.nickname) {
+        if (PockeyPlayerManager.Instance().player.data.nickname && (this.inputText as HTMLTextAreaElement).value != PockeyPlayerManager.Instance().player.data.nickname) {
             (this.inputText as HTMLTextAreaElement).value = PockeyPlayerManager.Instance().player.data.nickname;
         }
     }

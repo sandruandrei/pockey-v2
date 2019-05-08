@@ -114,11 +114,12 @@ export class PockeyClientPlayer extends Player {
         if (PockeyPlayerManager.Instance().opponent.color == PockeyPlayerManager.Instance().player.data.color) {
             // // @ts-ignore
             // let oldColor:number = PockeyPlayerManager.Instance().player.data.color;
+            let opponentColor:string = PockeyPlayerManager.Instance().opponent.color;
             _.forEach(PockeySettings.LARGE_COLORS_ARRAY, (colorVO: InventoryVO) => {
-                if (colorVO.id == PockeyPlayerManager.Instance().opponent.color) {
+                if (colorVO.id == opponentColor) {
                     PockeyPlayerManager.Instance().opponent.color = Utilities.ColorToPlainString(colorVO.complementaryColor);
                     // console.log("NEW OPPONENT COLOR");
-                    return true;
+                    return false;
                 }
             });
         }

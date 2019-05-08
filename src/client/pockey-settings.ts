@@ -156,7 +156,8 @@ export class PockeySettings {
         {
             category: "COLORS",
             id: "0xf15369",
-            color: 0xf15369
+            color: 0xf15369,
+            complementaryColor: 0x8fc7ee
         }
     ];
 
