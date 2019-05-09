@@ -48,10 +48,25 @@ export class PockeyClientPlayer extends Player {
 
         this.socket.on(PockeySocketMessages.SCORE_UPDATED, this.onScoreUpdated.bind(this));
         this.socket.on(PockeySocketMessages.CHANGE_STATE, this.onChangePlayerState.bind(this));
+        this.socket.on(PockeySocketMessages.ROUND_TIMER_UPDATE, this.onServerRoundTimerUpdate.bind(this));
+        this.socket.on(PockeySocketMessages.ROUND_TIMER_COMPLETE, this.onServerRoundTimerComplete.bind(this));
     }
 
-    public onChangePlayerState(state: PockeyStates): void {
+    private onServerRoundTimerUpdate(time: number): void {
+        SignalsManager.DispatchSignal(PockeySignalTypes.UPDATE_CURRENT_PLAYER_TIMER, [time]);
+    }
+
+    private onServerRoundTimerComplete(): void {
+        SignalsManager.DispatchSignal(PockeySignalTypes.UPDATE_CURRENT_PLAYER_TIMER, [""]);
+    }
+
+    private onChangePlayerState(state: PockeyStates): void {
         SignalsManager.DispatchSignal(PockeySignalTypes.CHANGE_PLAYER_STATE, [state]);
+    }
+
+    public announceShot():void
+    {
+        this.socket.emit(PockeySocketMessages.BALL_WAS_SHOT);
     }
 
     public onBallInPocket(ballType: BallType): void {
@@ -114,7 +129,7 @@ export class PockeyClientPlayer extends Player {
         if (PockeyPlayerManager.Instance().opponent.color == PockeyPlayerManager.Instance().player.data.color) {
             // // @ts-ignore
             // let oldColor:number = PockeyPlayerManager.Instance().player.data.color;
-            let opponentColor:string = PockeyPlayerManager.Instance().opponent.color;
+            let opponentColor: string = PockeyPlayerManager.Instance().opponent.color;
             _.forEach(PockeySettings.LARGE_COLORS_ARRAY, (colorVO: InventoryVO) => {
                 if (colorVO.id == opponentColor) {
                     PockeyPlayerManager.Instance().opponent.color = Utilities.ColorToPlainString(colorVO.complementaryColor);

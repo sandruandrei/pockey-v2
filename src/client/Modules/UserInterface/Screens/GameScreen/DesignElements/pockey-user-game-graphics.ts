@@ -105,10 +105,19 @@ export class PockeyUserGameGraphics {
                 else {
                     // this.timerText.visible = true;
                     // this.timerText.style.fill = 0xffffff;
+                    let counterText: string = "0:";
+                    let counter: number = +timeText;
+                    counterText += (counter >= 10) ? counter.toString() : "0" + counter.toString();
+                    // this.timerText = counterText;
 
-                    this.timerText.innerText = timeText;
+                    this.timerText.innerText = counterText;
                     this.timerText.style.display = "flex";
                     this.userAvatar.style.border = "3px solid red";
+
+                    if(+timeText <= 5)
+                    {
+                        this.animateTimer();
+                    }
                     // this.timerText.x = 2 + this.userAvatar.x + this.userAvatar.width / 2 - this.timerText.width / 2;
 
                     /*if (this.ballType == "right")

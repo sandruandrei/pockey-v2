@@ -8,6 +8,7 @@
  *
  *  Created by Sandru Andrei on 4/19/2019
  */
+
 export class Utilities{
     public static BabylonHexToRGB(color: number): BABYLON.Color4 {
         let colorToHex: string = ('00000' + (color | 0).toString(16)).substr(-6);

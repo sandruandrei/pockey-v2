@@ -12,6 +12,7 @@ import {AbstractScreen} from "../../../qFramework/AbstractModules/UserInterface/
 import {RoundCompleteType} from "./pockey-ui-round-complete-screen";
 import {InventoryVO, PockeySettings} from "../../../pockey-settings";
 import * as _ from "lodash";
+import {PockeyPlayerManager} from "../../GameModule/pockey-player-manager";
 
 export class PockeyUiOpponentFoundScreen extends AbstractScreen {
     private roundBeginsText: HTMLDivElement | undefined;
@@ -20,19 +21,23 @@ export class PockeyUiOpponentFoundScreen extends AbstractScreen {
 
     constructor() {
         super();
+
+        this.assignDivs();
     }
 
     protected assignDivs(): void {
         super.assignDivs();
 
         this.div = document.getElementById("PlayerFoundScreen") as HTMLDivElement;
-        this.avatarDiv = document.getElementById("OpponentAvatarImage") as HTMLDivElement;
+        this.avatarDiv = document.getElementById("OpponentAvatarImage").getElementsByClassName("avatarImage")[0] as HTMLDivElement;
         this.nameDiv = document.getElementById("PlayerFoundName") as HTMLDivElement;
         this.roundBeginsText = document.getElementById("RoundOneStartsText") as HTMLDivElement;
         this.titleDiv = document.getElementById("PlayerFoundTitle") as HTMLDivElement;
     }
 
     public show(params: RoundCompleteType): void {
+        this.updateAvatar(PockeyPlayerManager.Instance().opponent.avatar);
+        this.updateOpponentName(PockeyPlayerManager.Instance().opponent.nickname);
         super.show(params);
 
         if (params == RoundCompleteType.rematch) {
@@ -40,6 +45,7 @@ export class PockeyUiOpponentFoundScreen extends AbstractScreen {
         } else {
             (this.titleDiv as HTMLDivElement).innerText = "opponent found";
         }
+
     }
 
 // public show(): void {
@@ -60,7 +66,7 @@ export class PockeyUiOpponentFoundScreen extends AbstractScreen {
         (this.roundBeginsText as HTMLDivElement).innerText = "first round starts in " + text;
     }
 
-    public updateAvatar(avatarID: string): void {
+    private updateAvatar(avatarID: string): void {
 
         let avatarPath: string | undefined = "";
 
@@ -71,10 +77,11 @@ export class PockeyUiOpponentFoundScreen extends AbstractScreen {
             }
         });
 
-        (this.avatarDiv as HTMLDivElement).style.background = "center / contain no-repeat #1a4157 url(" + avatarPath + ")";
+        avatarPath = "center / contain no-repeat #1a4157 url(" + avatarPath + ")";
+        this.avatarDiv.style.background = avatarPath;
     }
 
-    public updateOpponentName(): void {
-        (this.nameDiv as HTMLDivElement).innerText = PockeySettings.OPPONENT_NICKNAME;
+    private updateOpponentName(nickname: string): void {
+        (this.nameDiv as HTMLDivElement).innerText = nickname;
     }
 }

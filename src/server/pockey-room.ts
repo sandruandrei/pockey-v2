@@ -14,6 +14,7 @@ import {BallType, GameData} from "../common/pockey-game-settings";
 import {PockeySocketMessages} from "../client/Modules/ConnectionModule/pockey-connection-channels-and-messages";
 import * as _ from "lodash";
 import {PockeyStates} from "../client/Modules/StateMachine/pockey-state-machine";
+import {Timer} from "../client/qFramework/Utils/timer";
 
 export class PockeyRoom {
     public id: string = "";
@@ -25,6 +26,8 @@ export class PockeyRoom {
     private ownBallFault: boolean = false;
     private opponentBallScored: boolean = false;
     private currentPlayer: Player;
+    private roundTimer: Timer;
+    private roundTimeElapsed: boolean = false;
 
     constructor(id: string, io: any) {
         this.id = id;
@@ -32,6 +35,25 @@ export class PockeyRoom {
         // this.players.push(this.player1);
         // this.players.push(this.player2);
         console.log("room created");
+        this.roundTimer = new Timer(this.onRoundTimerUpdate.bind(this), this.onRoundTimerComplete.bind(this));
+    }
+
+    private onRoundTimerUpdate(): void {
+        this.io.to(this.id).emit(PockeySocketMessages.ROUND_TIMER_UPDATE, this.roundTimer.getCurrentTime());
+    }
+
+    private onRoundTimerComplete(): void {
+        this.io.to(this.id).emit(PockeySocketMessages.ROUND_TIMER_COMPLETE);
+
+        this.roundTimeElapsed = true;
+
+        // this.players[0].socket.emit(PockeySocketMessages.CHANGE_STATE, PockeyStates.onWatch);
+        // this.players[1].socket.emit(PockeySocketMessages.CHANGE_STATE, PockeyStates.onWatch);
+        this.checkNextTurn();
+
+        // this.currentPlayer.socket.emit(PockeySocketMessages.CHANGE_STATE, PockeyStates.onWatch);
+
+        // this.io.to(this.id).emit(PockeySocketMessages.ROUND_TIMER_COMPLETE, this.roundTimer.getCurrentTime());
     }
 
     public assignPlayer(player: Player): void {
@@ -50,6 +72,12 @@ export class PockeyRoom {
 
         player.socket.on(PockeySocketMessages.CHECK_NEXT_TURN, () => {
             this.checkNextTurn();
+        });
+
+        player.socket.on(PockeySocketMessages.BALL_WAS_SHOT, () => {
+            this.roundTimeElapsed = false;
+            this.roundTimer.stop();
+            this.io.to(this.id).emit(PockeySocketMessages.ROUND_TIMER_COMPLETE);
         });
 
         this.players.push(player);
@@ -106,6 +134,7 @@ export class PockeyRoom {
     }
 
     private checkNextTurn(): void {
+
         if (this.whiteBallInTheHall) {
             console.log("intra");
             this.currentPlayer.socket.emit(PockeySocketMessages.CHANGE_STATE, PockeyStates.onWatch);
@@ -123,6 +152,10 @@ export class PockeyRoom {
             this.changeCurrentPlayer();
             this.currentPlayer.socket.emit(PockeySocketMessages.CHANGE_STATE, PockeyStates.onRearrangeStick);
             this.currentPlayer.socket.emit(FrameworkSocketEvents.startSendingSnapshots);
+        } else if (this.roundTimeElapsed) {
+            this.currentPlayer.socket.emit(PockeySocketMessages.CHANGE_STATE, PockeyStates.onWatch);
+            this.changeCurrentPlayer();
+            this.currentPlayer.socket.emit(PockeySocketMessages.CHANGE_STATE, PockeyStates.onRearrangeStick);
         } else {
             this.currentPlayer.socket.emit(PockeySocketMessages.CHANGE_STATE, PockeyStates.onRearrangeStick);
             this.currentPlayer.socket.emit(FrameworkSocketEvents.startSendingSnapshots);
@@ -174,7 +207,7 @@ export class PockeyRoom {
         this.players[1].data.currentScore = 7;
 
         this.io.to(this.id).emit(FrameworkSocketEvents.gameSetup, [this.players[0].data, this.players[1].data, this.gameData]);
-        setTimeout(this.sendStartRound.bind(this), 1000);
+        setTimeout(this.sendStartRound.bind(this), 3000);
     }
 
     private sendStartRound(): void {
@@ -187,5 +220,8 @@ export class PockeyRoom {
             this.players[1].socket.emit(FrameworkSocketEvents.startSendingSnapshots);
             this.players[1].socket.emit(PockeySocketMessages.CHANGE_STATE, PockeyStates.onRearrangeStick);
         }
+
+        this.roundTimer.start(20);
+        this.roundTimeElapsed = false;
     }
 }

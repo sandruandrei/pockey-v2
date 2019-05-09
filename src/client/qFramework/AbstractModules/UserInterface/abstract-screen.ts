@@ -17,11 +17,12 @@ export class AbstractScreen {
     set div(value: HTMLDivElement | undefined) {
         this._div = value;
     }
+
     private _div: HTMLDivElement | undefined;
     protected titleDiv: HTMLDivElement | undefined;
 
     constructor() {
-        this.assignDivs();
+
     };
 
     protected assignDivs(): void {

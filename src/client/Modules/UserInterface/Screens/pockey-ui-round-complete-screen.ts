@@ -49,6 +49,8 @@ export class RoundCompleteScreen extends AbstractScreen {
     constructor() {
         super();
 
+        this.assignDivs();
+
         SignalsManager.AddSignalCallback(PockeySignalTypes.ASSIGN_PLAYER, this.onDefinePlayerInterface.bind(this));
         SignalsManager.AddSignalCallback(PockeySignalTypes.SET_SIDES_TYPE, this.onSetSides.bind(this));
         SignalsManager.AddSignalCallback(PockeyConnectionSignals.OPPONENT_NEXT_ROUND, this.onRematch.bind(this));

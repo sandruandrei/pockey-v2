@@ -269,8 +269,14 @@ export class PockeyUiGameScreen {
         // }
     }
 
-    // @ts-ignore
     private onUpdateCurrentPlayerTimer(params: any[]) {
+        let currentTime: string = params[0].toString();
+
+        if (PockeyPlayerManager.Instance().currentPlayerSocketID == PockeyPlayerManager.Instance().player.data.socketID) {
+            this.playerGraphicsInterface.graphics.updateTimer(currentTime);
+        } else if (PockeyPlayerManager.Instance().currentPlayerSocketID == PockeyPlayerManager.Instance().opponent.socketID) {
+            this.opponentGraphicsInterface.graphics.updateTimer(currentTime);
+        }
         // let time: string = params[0];
         // let playerType: BallType = params[1];
         // let animateText: boolean = params[2];
@@ -362,9 +368,9 @@ export class PockeyUiGameScreen {
         // this.onUpdateMatchCircles();
     }
 
-    private onUpdateScore(score:number[]) {
-        let playerScore:number = score[0];
-        let opponentScore:number = score[1];
+    private onUpdateScore(score: number[]) {
+        let playerScore: number = score[0];
+        let opponentScore: number = score[1];
         this.playerGraphicsInterface.graphics.updateScore(playerScore);
         this.opponentGraphicsInterface.graphics.updateScore(opponentScore);
     }

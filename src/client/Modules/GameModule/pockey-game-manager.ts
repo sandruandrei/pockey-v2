@@ -37,12 +37,16 @@ export class PockeyGameManager {
         SignalsManager.AddSignalCallback(PockeySignalTypes.CHANGE_PLAYER_STATE, this.onChangePlayerState.bind(this));
         SignalsManager.AddSignalCallback(PockeySignalTypes.WHITE_BALL_REPOSITIONED, this.onWhiteBallRepositioned.bind(this));
         SignalsManager.AddSignalCallback(PockeySignalTypes.OWN_BALL_TOUCHED_FIRST, this.onOwnBallTouchedFirst.bind(this));
+        SignalsManager.AddSignalCallback(PockeySignalTypes.SHOOT_BALL, this.onShoot.bind(this));
 
         // SignalsManager.AddSignalCallback(SignalsType.BEGIN_ROUND, this.startOnRearrange.bind(this));
 
         SignalsManager.AddSignalCallback(ConnectionSignalsType.GAME_SETUP_RECEIVED, this.onGameSetupReceived.bind(this));
     }
 
+    protected onShoot(): void {
+        PockeyPlayerManager.Instance().player.announceShot();
+    }
 
     protected onOwnBallTouchedFirst(): void {
         PockeyPlayerManager.Instance().player.onOwnBallFault();
@@ -66,6 +70,8 @@ export class PockeyGameManager {
     }
 
     protected onChangePlayerState(state: PockeyStates[]): void {
+        SignalsManager.DispatchSignal(PockeySignalTypes.HIDE_OPPONENT_FOUND_SCREEN);
+
         if (state[0] == PockeyStates.onRepositionWhiteBall) {
             this.startOnReposition();
         } else if (state[0] == PockeyStates.onRearrangeStick) {

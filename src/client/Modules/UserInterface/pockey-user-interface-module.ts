@@ -161,7 +161,6 @@ import {PockeySoundURLS} from "../SoundModule/pockey-sound-names";
             private onShowOpponentFoundScreen(params:RoundCompleteType[]): void {
                 this.activeRoundScreen = this.opponentFoundScreen;
 
-                // @ts-ignore
                 this.opponentFoundScreen.show(params[0]);
             }
 

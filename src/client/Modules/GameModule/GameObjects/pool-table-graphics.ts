@@ -23,6 +23,8 @@ import {Pocket} from "./OtherPooltableElements/pocket";
 import {BallType} from "../../../../common/pockey-game-settings";
 import {BallGameObject} from "./ball/ball-game-object";
 import * as _ from "lodash";
+import {BallBlocker} from "./OtherPooltableElements/ball-blocker";
+import {MaterialType} from "../p2-world-manager";
 
 // import {BallGameObject} from "./ball/ball-game-object";
 
@@ -154,8 +156,8 @@ export class PoolTableGraphics extends PIXI.Container {
         this.rightGoalie = new GoalieGameObject("rightGoalie", BallType.Right);
         this.addChild(this.rightGoalie.graphicObject);
 
-         this.rightGoalkeeperCircle = new PIXI.Circle(510, 0, 100);
-         this.goalkeepersCircles.push(this.rightGoalkeeperCircle);
+        this.rightGoalkeeperCircle = new PIXI.Circle(510, 0, 100);
+        this.goalkeepersCircles.push(this.rightGoalkeeperCircle);
 
         //end goalies
 
@@ -246,14 +248,22 @@ export class PoolTableGraphics extends PIXI.Container {
     }
 
     private addPocketsAndBlockers() {
-        /*let blocker1: Rect = this.createBlocker(new Rectangle(-494, 0, 20, 380), 0, MaterialType.PUCK_ONLY_MATERIAL, 0xff9900, "rect2a");
-        let blocker2: Rect = this.createBlocker(new Rectangle(497, 0, 20, 380), 0, MaterialType.PUCK_ONLY_MATERIAL, 0xff9900, "rect2b");
-        let blocker3: Rect = this.createBlocker(new Rectangle(-492, -250, 20, 58), 0.7853981634, MaterialType.BALL_ONLY_MATERIAL, 0xffff00, "rect4a");
-        let blocker4: Rect = this.createBlocker(new Rectangle(492, 250, 20, 58), 0.7853981634, MaterialType.BALL_ONLY_MATERIAL, 0xffff00, "rect4b");
-        let blocker5: Rect = this.createBlocker(new Rectangle(492, -250, 20, 58), -0.7853981634, MaterialType.BALL_ONLY_MATERIAL, 0xffff00, "rect5a");
-        let blocker6: Rect = this.createBlocker(new Rectangle(-492, 250, 20, 58), -0.7853981634, MaterialType.BALL_ONLY_MATERIAL, 0xffff00, "rect5b");
-        let blocker7: Rect = this.createBlocker(new Rectangle(0, -270, 100, 20), 0, MaterialType.BALL_ONLY_MATERIAL, 0xffff00, "rect7a");
-        let blocker8: Rect = this.createBlocker(new Rectangle(0, 270, 100, 20), 0, MaterialType.BALL_ONLY_MATERIAL, 0xffff00, "rect7b");*/
+        //blocker 1
+        this.createBlocker(new PIXI.Rectangle(-494, 0, 20, 380), 0, MaterialType.PUCK_ONLY_MATERIAL);
+        //blocker 2
+        this.createBlocker(new PIXI.Rectangle(497, 0, 20, 380), 0, MaterialType.PUCK_ONLY_MATERIAL);
+        //blocker 3
+        this.createBlocker(new PIXI.Rectangle(-492, -250, 20, 58), 0.7853981634, MaterialType.BALL_ONLY_MATERIAL);
+        //blocker 4
+        this.createBlocker(new PIXI.Rectangle(492, 250, 20, 58), 0.7853981634, MaterialType.BALL_ONLY_MATERIAL);
+        //blocker 5
+        this.createBlocker(new PIXI.Rectangle(492, -250, 20, 58), -0.7853981634, MaterialType.BALL_ONLY_MATERIAL);
+        //blocker 6
+        this.createBlocker(new PIXI.Rectangle(-492, 250, 20, 58), -0.7853981634, MaterialType.BALL_ONLY_MATERIAL);
+        //blocker 7
+        this.createBlocker(new PIXI.Rectangle(0, -270, 100, 20), 0, MaterialType.BALL_ONLY_MATERIAL);
+        //blocker 8
+        this.createBlocker(new PIXI.Rectangle(0, 270, 100, 20), 0, MaterialType.BALL_ONLY_MATERIAL);
 
         let pocket1: Pocket = new Pocket(-497, -254, 26, new Vector2(-438, -200));
         this.pockets.push(pocket1);
@@ -278,5 +288,10 @@ export class PoolTableGraphics extends PIXI.Container {
         let pocket6: Pocket = new Pocket(-497, 253, 26, new Vector2(-438, 200));
         this.pockets.push(pocket6);
         pocket6.addPoints(this);
+    }
+
+    private createBlocker(rectangle: PIXI.Rectangle, rotationAngle: number, materialType: MaterialType): BallBlocker {
+
+        return new BallBlocker(rectangle, rotationAngle, materialType);
     }
 }

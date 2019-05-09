@@ -15,9 +15,11 @@ import {RoundCompleteScreen} from "./pockey-ui-round-complete-screen";
 export class MatchCompleteScreen extends RoundCompleteScreen {
     protected textDiv: HTMLDivElement = document.getElementById("MatchCompleteScreen") as HTMLDivElement;
 
-    // constructor(){
-    //     super();
-    // }
+    constructor(){
+        super();
+
+        this.assignDivs();
+    }
 
     protected assignDivs(): void {
         this.div = document.getElementById("MatchCompleteScreen") as HTMLDivElement;

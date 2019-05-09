@@ -127,6 +127,7 @@ export class PockeyEntryPoint extends AbstractEntryPoint {
         gameModule.addAssetToLoad(Settings.desktopAssetsPath + "Images/goalie_color.png");
         gameModule.addAssetToLoad(Settings.desktopAssetsPath + "Images/goalie_top.png");
         gameModule.addAssetToLoad(Settings.desktopAssetsPath + "Images/BallTextures/ballTexture.jpg");
+        gameModule.addAssetToLoad(Settings.desktopAssetsPath + "Images/UI/opponent.png");
 
         // gameModule.addAssetToLoad(Settings.desktopAssetsPath + "Images/table_border_01.png");
         // gameModule.addAssetToLoad(Settings.desktopAssetsPath + "Images/ballGraphics/puck2.png");
@@ -233,10 +234,9 @@ export class PockeyEntryPoint extends AbstractEntryPoint {
         requestAnimationFrame(this.salam.bind(this));
     }
 
-    salam():void
-    {
+    salam(): void {
         requestAnimationFrame(this.salam.bind(this));
-        P2WorldManager.Instance().world.step(1/ 60);
+        P2WorldManager.Instance().world.step(1 / 60);
     }
 
     protected onFrameAnimateFlag(deltaFrame: number): void {

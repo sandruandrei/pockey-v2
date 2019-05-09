@@ -1107,7 +1107,7 @@ div#PlayerFoundScreen {
 }
 
 div#PlayerFoundImage {
-    background: url(../Assets/Desktop/Images/opponent.png) center center / contain no-repeat;
+    background: url(../Assets/Desktop/Images/UI/opponent.png) center center / contain no-repeat;
     width: 310px;
     height: 126px;
     /* float: left; */
