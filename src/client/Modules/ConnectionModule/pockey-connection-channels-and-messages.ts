@@ -17,5 +17,6 @@ export class PockeySocketMessages {
     public static ROUND_TIMER_UPDATE: string = "PockeySocketMessages." + "ROUND_TIMER_UPDATE";
     public static ROUND_TIMER_COMPLETE: string = "PockeySocketMessages." + "ROUND_TIMER_COMPLETE";
     public static BALL_WAS_SHOT: string = "PockeySocketMessages." + "BALL_WAS_SHOT";
+    public static ALLOCATED_TIME_ELAPSED: string = "PockeySocketMessages." + "ALLOCATED_TIME_ELAPSED";
 }
 

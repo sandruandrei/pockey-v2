@@ -27,7 +27,10 @@ export class PockeyRoom {
     private opponentBallScored: boolean = false;
     private currentPlayer: Player;
     private roundTimer: Timer;
-    private roundTimeElapsed: boolean = false;
+    private roundDuration: number = 20;
+
+    private roundFinished: boolean = false;
+    private matchFinished: boolean = false;
 
     constructor(id: string, io: any) {
         this.id = id;
@@ -44,12 +47,12 @@ export class PockeyRoom {
 
     private onRoundTimerComplete(): void {
         this.io.to(this.id).emit(PockeySocketMessages.ROUND_TIMER_COMPLETE);
-
-        this.roundTimeElapsed = true;
+        this.currentPlayer.socket.emit(PockeySocketMessages.ALLOCATED_TIME_ELAPSED);
+        // this.roundTimeElapsed = true;
 
         // this.players[0].socket.emit(PockeySocketMessages.CHANGE_STATE, PockeyStates.onWatch);
         // this.players[1].socket.emit(PockeySocketMessages.CHANGE_STATE, PockeyStates.onWatch);
-        this.checkNextTurn();
+        // this.checkNextTurn();
 
         // this.currentPlayer.socket.emit(PockeySocketMessages.CHANGE_STATE, PockeyStates.onWatch);
 
@@ -57,6 +60,8 @@ export class PockeyRoom {
     }
 
     public assignPlayer(player: Player): void {
+        player.data.roundWins = 0;
+
         player.socket.on(FrameworkSocketEvents.snapshotUpdate, (data: any) => {
             // console.log("playa: " + player);
             this.sendGameSnapshot(player.data.socketID, data);
@@ -75,7 +80,7 @@ export class PockeyRoom {
         });
 
         player.socket.on(PockeySocketMessages.BALL_WAS_SHOT, () => {
-            this.roundTimeElapsed = false;
+            // this.roundTimeElapsed = false;
             this.roundTimer.stop();
             this.io.to(this.id).emit(PockeySocketMessages.ROUND_TIMER_COMPLETE);
         });
@@ -127,39 +132,52 @@ export class PockeyRoom {
         }
 
         if (player.data.currentScore <= 0) {
-
+            this.roundFinished = true;
+            player.data.roundWins++;
+            if (player.data.roundWins == 2) {
+                this.matchFinished = true;
+            }
         } else if (opponent.data.currentScore <= 0) {
-
+            this.roundFinished = true;
+            opponent.data.roundWins++;
+            if (opponent.data.roundWins == 2) {
+                this.matchFinished = true;
+            }
         }
     }
 
     private checkNextTurn(): void {
 
+        if (this.matchFinished) {
+
+        } else if (this.roundFinished) {
+
+        }
         if (this.whiteBallInTheHall) {
-            console.log("intra");
             this.currentPlayer.socket.emit(PockeySocketMessages.CHANGE_STATE, PockeyStates.onWatch);
             this.changeCurrentPlayer();
             this.currentPlayer.socket.emit(PockeySocketMessages.CHANGE_STATE, PockeyStates.onRepositionWhiteBall);
             this.currentPlayer.socket.emit(FrameworkSocketEvents.startSendingSnapshots);
-            // this.players[0].socket.emit(FrameworkSocketEvents.startSendingSnapshots);
+            this.roundTimer.start(this.roundDuration);
         } else if (this.ownBallFault) {
             this.currentPlayer.socket.emit(PockeySocketMessages.CHANGE_STATE, PockeyStates.onWatch);
             this.changeCurrentPlayer();
             this.currentPlayer.socket.emit(PockeySocketMessages.CHANGE_STATE, PockeyStates.onRepositionWhiteBall);
             this.currentPlayer.socket.emit(FrameworkSocketEvents.startSendingSnapshots);
+            this.roundTimer.start(this.roundDuration);
+
         } else if (!this.opponentBallScored) {
             this.currentPlayer.socket.emit(PockeySocketMessages.CHANGE_STATE, PockeyStates.onWatch);
             this.changeCurrentPlayer();
             this.currentPlayer.socket.emit(PockeySocketMessages.CHANGE_STATE, PockeyStates.onRearrangeStick);
             this.currentPlayer.socket.emit(FrameworkSocketEvents.startSendingSnapshots);
-        } else if (this.roundTimeElapsed) {
-            this.currentPlayer.socket.emit(PockeySocketMessages.CHANGE_STATE, PockeyStates.onWatch);
-            this.changeCurrentPlayer();
-            this.currentPlayer.socket.emit(PockeySocketMessages.CHANGE_STATE, PockeyStates.onRearrangeStick);
+            this.roundTimer.start(this.roundDuration);
         } else {
             this.currentPlayer.socket.emit(PockeySocketMessages.CHANGE_STATE, PockeyStates.onRearrangeStick);
             this.currentPlayer.socket.emit(FrameworkSocketEvents.startSendingSnapshots);
+            this.roundTimer.start(this.roundDuration);
         }
+
     }
 
     private changeCurrentPlayer(): void {
@@ -221,7 +239,7 @@ export class PockeyRoom {
             this.players[1].socket.emit(PockeySocketMessages.CHANGE_STATE, PockeyStates.onRearrangeStick);
         }
 
-        this.roundTimer.start(20);
-        this.roundTimeElapsed = false;
+        this.roundTimer.start(this.roundDuration);
+        // this.roundTimeElapsed = false;
     }
 }

@@ -50,6 +50,11 @@ export class PockeyClientPlayer extends Player {
         this.socket.on(PockeySocketMessages.CHANGE_STATE, this.onChangePlayerState.bind(this));
         this.socket.on(PockeySocketMessages.ROUND_TIMER_UPDATE, this.onServerRoundTimerUpdate.bind(this));
         this.socket.on(PockeySocketMessages.ROUND_TIMER_COMPLETE, this.onServerRoundTimerComplete.bind(this));
+        this.socket.on(PockeySocketMessages.ALLOCATED_TIME_ELAPSED, this.onAllocatedTimeElapsed.bind(this));
+    }
+
+    private onAllocatedTimeElapsed(): void {
+        SignalsManager.DispatchSignal(PockeySignalTypes.END_TURN);
     }
 
     private onServerRoundTimerUpdate(time: number): void {
@@ -64,8 +69,7 @@ export class PockeyClientPlayer extends Player {
         SignalsManager.DispatchSignal(PockeySignalTypes.CHANGE_PLAYER_STATE, [state]);
     }
 
-    public announceShot():void
-    {
+    public announceShot(): void {
         this.socket.emit(PockeySocketMessages.BALL_WAS_SHOT);
     }
 
@@ -78,7 +82,7 @@ export class PockeyClientPlayer extends Player {
     }
 
     public onEndTurn(): void {
-        console.log('salamflorin');
+        console.log('s-a oprit transmisia');
         this.snapshotEmitionStopped = true;
         // this.socket.emit(PockeySocketMessages.CHECK_NEXT_TURN);
     }
@@ -158,7 +162,7 @@ export class PockeyClientPlayer extends Player {
 
         // console.log("client player snapshots received: " + this.snapshotsReceived );
 
-        this.pockeyGameWorld.sendSnapshotToGameObjects(data);
+        this.pockeyGameWorld.applySnapshotToGameObjects(data);
 
         if (this.snapshotsReceived == 1 && !this.snapshotApplianceStarted) {
             this.pockeyGameWorld.startSimulatingSnapshots();
@@ -196,6 +200,7 @@ export class PockeyClientPlayer extends Player {
             this.sendGameSnapshot(this.pockeyGameWorld.getSnapshot());
             setTimeout(this.snapshotTimer.bind(this), 100);
         }
+//         console.log("inca se trimite snapshot");
         // TweenMax.delayedCall(Settings.playerUpdateInterval, this.snapshotTimer.bind(this))
     }
 

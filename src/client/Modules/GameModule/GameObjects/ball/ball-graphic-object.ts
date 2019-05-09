@@ -132,7 +132,7 @@ export class BallGraphicObject extends GraphicObject {
 
     public enableSphere() {
         if (this.sphere) {
-            this.sphere.setEnabled(false);
+            this.sphere.setEnabled(true);
         }
     }
 }

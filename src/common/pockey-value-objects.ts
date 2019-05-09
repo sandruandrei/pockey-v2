@@ -45,7 +45,9 @@ export interface PockeyGameElementVO {
     isOnReposition?: boolean
     pivot?: number,
     state?:PockeyStates,
-    direction?:number
+    direction?:number,
+    canBeRemoved?:boolean,
+    scale?:number
 }
 
 // export interface PockeyGraphicElementVO {

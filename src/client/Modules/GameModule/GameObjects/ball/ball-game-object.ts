@@ -27,7 +27,7 @@ export class BallGameObject extends PockeyGameObject {
     public lineLimits: p2.Line[];
     public pockets: Pocket[];
 
-    public canBeRemoved: boolean = false;
+    // public canBeRemoved: boolean = false;
     public removed: boolean = false;
     public removedFromArray: boolean = false;
 
@@ -64,6 +64,8 @@ export class BallGameObject extends PockeyGameObject {
         this.velocity = new Vector2();
         this.oldPos = new Vector2();
 
+        this.gameObjectData.alpha = 1;
+        this.gameObjectData.scale = 1;
         // this.delta = PockeySettings.DELTA;
         // this.radius = PockeySettings.BALL_RADIUS;
 
@@ -142,11 +144,11 @@ export class BallGameObject extends PockeyGameObject {
         p2Body.angularForce = 0;
         p2Body.angularVelocity = 0;
 
-        p2Body.damping = 0.4;
+        p2Body.damping = 0.6;
         p2Body.boundingRadius = this.radius;
         p2Body.allowSleep = true;
-        p2Body.sleepSpeedLimit = 1.8; // Body will feel sleepy if speed<1 (speed is the norm of velocity)
-        p2Body.sleepTimeLimit = 0.1;
+        p2Body.sleepSpeedLimit = 1.4; // Body will feel sleepy if speed<1 (speed is the norm of velocity)
+        p2Body.sleepTimeLimit = 0.4;
         p2Body.sleep();// =  1;
         p2Body.velocity[0] = 0;// =  1;
         p2Body.velocity[1] = 0;// =  1;
@@ -238,12 +240,16 @@ export class BallGameObject extends PockeyGameObject {
 
         if (this.isUpdatingFromServer) {
             this.setPosition(this.gameObjectData.xPos, this.gameObjectData.yPos);
+            if ((this.graphicObject as BallGraphicObject).sphere)
+                (this.graphicObject as BallGraphicObject).sphere.visibility = this.gameObjectData.alpha;
+            this.graphicObject.scale.x = this.graphicObject.scale.y = this.gameObjectData.scale;
+
             return;
         }
 
         this.moving = this.p2Body.sleepState != p2.Body.SLEEPING;
 
-        if (this.canBeRemoved) {
+        if (this.gameObjectData.canBeRemoved) {
             this.moving = false;
         }
 
@@ -255,7 +261,7 @@ export class BallGameObject extends PockeyGameObject {
         if (!this.moving)
             return;
 
-        if (this.moving && !this.canBeRemoved) {
+        if (this.moving && !this.gameObjectData.canBeRemoved) {
 
             let pocketPosition: Vector2 = new Vector2();
             let p2BodyPos: Vector2 = new Vector2(this.p2Body.position[0], this.p2Body.position[1]);
@@ -276,7 +282,7 @@ export class BallGameObject extends PockeyGameObject {
                             soundName: PockeySoundURLS.BALL_IN_POCKET
                         }]);
 
-                        this.canBeRemoved = true;
+                        this.gameObjectData.canBeRemoved = true;
                         this.p2Body.velocity = [0, 0];
                         P2WorldManager.Instance().world.removeBody(this.p2Body);
                         P2WorldManager.Instance().world.removeBody(this.p2Shadow);
@@ -482,13 +488,18 @@ export class BallGameObject extends PockeyGameObject {
                         this.ballInPocketAnimationTimeline.add(TweenMax.to(this.graphicObject.scale, 0.1, {
                             x: 0,
                             y: 0,
-                            ease: Linear.easeNone
+                            ease: Linear.easeNone,
+                            onUpdate: () => {
+                                this.gameObjectData.scale = this.graphicObject.scale.x;
+                            }
                         }), 0);
                         this.ballInPocketAnimationTimeline.add(TweenMax.to((this.graphicObject as BallGraphicObject).sphere, (duration / 3), {
-                            // visibility: 0,
-                            ease: Linear.easeNone
+                            visibility: 0,
+                            ease: Linear.easeNone,
+                            onUpdate: () => {
+                                this.gameObjectData.alpha = (this.graphicObject as BallGraphicObject).sphere.visibility;
+                            }
                         }), duration / 8);
-
 
                         return;
                     }
@@ -496,7 +507,7 @@ export class BallGameObject extends PockeyGameObject {
 
             });
 
-            if (this.canBeRemoved)
+            if (this.gameObjectData.canBeRemoved)
                 return;
 
             // this.gameObjectData.xPos = p2BodyPos.x;
@@ -522,12 +533,9 @@ export class BallGameObject extends PockeyGameObject {
 
     }
 
-
-
-
     protected declareAnimationFinished(): void {
         this.animationInProgress = false;
-        (this.graphicObject as BallGraphicObject).enableSphere();
+        // (this.graphicObject as BallGraphicObject).enableSphere();
     }
 
     protected addGraphicObject(): void {
@@ -603,7 +611,7 @@ export class BallGameObject extends PockeyGameObject {
 
         // this.zIndexSwitched = false;
 
-        this.canBeRemoved = false;
+        this.gameObjectData.canBeRemoved = false;
         // console.log("salam la reset abstract ball: " + this.name);
         // console.log("%c salam la reset abstract ball: " + this.name, "color: #00ff00");
 
@@ -612,9 +620,9 @@ export class BallGameObject extends PockeyGameObject {
         this.p2Body.velocity[1] = 0;
         P2WorldManager.Instance().world.addBody(this.p2Body);
         P2WorldManager.Instance().world.addBody(this.p2Shadow);
-        this.removedFromArray = false;
+        // this.removedFromArray = false;
         this.graphicObject.visible = true;
-        this.removed = false;
+        // this.removed = false;
     }
 
     // public createBallShadow() {
@@ -789,8 +797,16 @@ export class BallGameObject extends PockeyGameObject {
         this.animationTween = TweenMax.to(this.gameObjectData, Settings.playerUpdateInterval, {
             xPos: this.snapshotsBundle[0].xPos,
             yPos: this.snapshotsBundle[0].yPos,
+            alpha: this.snapshotsBundle[0].alpha,
+            scale: this.snapshotsBundle[0].scale,
             ease: Linear.easeNone
         });
+
+        if (this.snapshotsBundle[0].canBeRemoved) {
+            this.gameObjectData.canBeRemoved = true;
+            P2WorldManager.Instance().world.removeBody(this.p2Body);
+            P2WorldManager.Instance().world.removeBody(this.p2Shadow);
+        }
 
         if (this.ballType == BallType.White && this.snapshotsBundle[0].isOnReposition == true) {
             this.gameObjectData.isOnReposition = true;

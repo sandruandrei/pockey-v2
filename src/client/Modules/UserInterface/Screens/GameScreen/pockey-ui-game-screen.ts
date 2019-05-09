@@ -269,6 +269,7 @@ export class PockeyUiGameScreen {
         // }
     }
 
+
     private onUpdateCurrentPlayerTimer(params: any[]) {
         let currentTime: string = params[0].toString();
 
@@ -277,7 +278,7 @@ export class PockeyUiGameScreen {
         } else if (PockeyPlayerManager.Instance().currentPlayerSocketID == PockeyPlayerManager.Instance().opponent.socketID) {
             this.opponentGraphicsInterface.graphics.updateTimer(currentTime);
         }
-        // let time: string = params[0];
+        // @ts-ignore
         // let playerType: BallType = params[1];
         // let animateText: boolean = params[2];
         //

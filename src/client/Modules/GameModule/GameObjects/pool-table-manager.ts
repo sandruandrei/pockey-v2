@@ -111,11 +111,12 @@ export class PoolTableManager {
         this.createBottomCollisionPolygon();
         this.createBottomCollisionShadowPolygon();
 
-        _.forEach(this.pooltable.balls, (ball: BallGameObject) => {
-            if (!ball.canBeRemoved) {
-                ball.addShadowBody();
-            }
-        });
+        // _.forEach(this.pooltable.balls, (ball: BallGameObject) => {
+        //     if (!ball.canBeRemoved) {
+        //         ball.addShadowBody();
+        //     }
+        // });
+        this.addShadows();
 
         P2WorldManager.Instance().world.on("beginContact", (evt: any) => {
             if (this.contactEnabled) {
@@ -316,7 +317,7 @@ export class PoolTableManager {
         // let power = this.poolTable.poolStick.power;
 
         _.forEach(this.pooltable.balls, (ball: BallGameObject) => {
-            if (!ball.canBeRemoved || ball.ballType == BallType.White) {
+            if (!ball.gameObjectData.canBeRemoved || ball.ballType == BallType.White) {
                 P2WorldManager.Instance().world.removeBody(ball.p2Shadow);
                 ball.p2Body.wakeUp();
             }
@@ -324,6 +325,7 @@ export class PoolTableManager {
 
         let velo: Vector2 = new Vector2(this.pooltable.stick.power * Math.cos(this.pooltable.stick.gameObjectData.rotation), this.pooltable.stick.power * Math.sin(this.pooltable.stick.gameObjectData.rotation));
 
+        this.pooltable.whiteBall.reset();
         this.pooltable.whiteBall.onShoot(velo);
         // P2WorldManager.Instance().world.removeBody(this.pooltable.whiteAbstract.p2Shadow);
         // P2WorldManager.Instance().world.removeBody(this.pooltable.blackBall.p2Shadow);
@@ -446,19 +448,15 @@ export class PoolTableManager {
 
     public addShadows(): void {
         _.forEach(this.pooltable.balls, (ball: BallGameObject) => {
-            if (!ball.canBeRemoved) {
+            if (!ball.gameObjectData.canBeRemoved) {
                 ball.addShadowBody();
             }
         });
     }
 
     public update(delta: number): void {
-        this.goalieMover.update(delta);
-        this.pooltable.stick.update();
         // this.pooltable.whiteBall.update();
-        _.forEach(this.pooltable.balls, (ball: BallGameObject) => {
-            ball.update();
-        });
+
 
         // this.pooltable.whiteAbstract.update();
         // this.pooltable.blackBall.update();
@@ -469,6 +467,8 @@ export class PoolTableManager {
         } else if (PockeyStateMachine.Instance().fsm.currentState == PockeyStates.onWatch) {
 
             if (this.pooltable.whiteBall.gameObjectData.isOnReposition == true) {
+//                 console.log("intra la watch -> reposition");
+
                 this.hideBallRayGraphics();
                 if (this.ballPositionCircleMesh) {
                     this.ballPositionCircleMesh.setEnabled(true);
@@ -476,6 +476,8 @@ export class PoolTableManager {
                 this.ballPositionCircleMesh.position.x = this.pooltable.whiteBall.gameObjectData.xPos;
                 this.ballPositionCircleMesh.position.y = -this.pooltable.whiteBall.gameObjectData.yPos - PockeySettings.BABYLON_Y_OFFSET;
             } else {
+//                 console.log("intra la watch -> rearrange");
+
                 this.onRearrangeStick();
             }
 
@@ -483,7 +485,18 @@ export class PoolTableManager {
             if (!this.ballsAreMoving()) {
                 SignalsManager.DispatchSignal(PockeySignalTypes.END_TURN);
             }
+        } else {
+            this.pooltable.stick.isActive = false;
         }
+
+        this.goalieMover.update(delta);
+
+        _.forEach(this.pooltable.balls, (ball: BallGameObject) => {
+            ball.update();
+        });
+
+        this.pooltable.stick.update();
+
     }
 
     protected ballsAreMoving(): boolean {
@@ -1145,25 +1158,28 @@ export class PoolTableManager {
         });
 
         _.forEach(this.pooltable.balls, (ball: BallGameObject) => {
-            ballPosition = new Vector2(ball.gameObjectData.xPos, ball.gameObjectData.yPos);
-            if (ballPositionCirclePosition.distanceTo(ballPosition) < ball.radius + PockeySettings.BALL_RADIUS && !ball.canBeRemoved && ball != this.pooltable.whiteBall) {
-                let opposite: number = ballPositionCirclePosition.y - ballPosition.y;
-                let adjacent: number = ballPositionCirclePosition.x - ballPosition.x;
-                let rotAngle: number = Math.atan2(opposite, adjacent);
+            if (!ball.gameObjectData.canBeRemoved) {
+                ballPosition = new Vector2(ball.gameObjectData.xPos, ball.gameObjectData.yPos);
+                if (ballPositionCirclePosition.distanceTo(ballPosition) < ball.radius + PockeySettings.BALL_RADIUS && !ball.gameObjectData.canBeRemoved && ball != this.pooltable.whiteBall) {
+                    let opposite: number = ballPositionCirclePosition.y - ballPosition.y;
+                    let adjacent: number = ballPositionCirclePosition.x - ballPosition.x;
+                    let rotAngle: number = Math.atan2(opposite, adjacent);
 
-                ballPositionCirclePosition.x = ballPosition.x + (PockeySettings.BALL_RADIUS + ball.radius) * Math.cos(rotAngle);
-                ballPositionCirclePosition.y = ballPosition.y + (PockeySettings.BALL_RADIUS + ball.radius) * Math.sin(rotAngle);
-
+                    ballPositionCirclePosition.x = ballPosition.x + (PockeySettings.BALL_RADIUS + ball.radius) * Math.cos(rotAngle);
+                    ballPositionCirclePosition.y = ballPosition.y + (PockeySettings.BALL_RADIUS + ball.radius) * Math.sin(rotAngle);
+                }
             }
         });
 
         _.forEach(this.pooltable.balls, (ball: BallGameObject) => {
-            ballPosition = new Vector2(ball.gameObjectData.xPos, ball.gameObjectData.yPos);
-            if (ball.ballType != BallType.White && ballPosition.distanceTo(ballPositionCirclePosition) < PockeySettings.BALL_RADIUS + ball.radius) {
-                isInteresectingWithOthers = true;
-                return true;
-            }
+            if (!ball.gameObjectData.canBeRemoved) {
 
+                ballPosition = new Vector2(ball.gameObjectData.xPos, ball.gameObjectData.yPos);
+                if (ball.ballType != BallType.White && ballPosition.distanceTo(ballPositionCirclePosition) < PockeySettings.BALL_RADIUS + ball.radius) {
+                    isInteresectingWithOthers = true;
+                    return true;
+                }
+            }
             // if (ball2 != ball) {
             //     let ball2Position: Vector2 = new Vector2(ball2.gameObjectData.xPos, ball2.gameObjectData.yPos);
             //     if (ball2Position.distanceTo(ballPositionCirclePosition) < PockeySettings.BALL_RADIUS + ball2.radius) {
@@ -1219,7 +1235,10 @@ export class PoolTableManager {
 
             this.repositionWhiteBallEnabled = false;
             this.pooltable.whiteBall.isOnReposition = false;
-            // this.pooltable.whiteBall.reset();
+            this.pooltable.whiteBall.reset();
+            // this.pooltable.whiteBall.gameObjectData.canBeRemoved = false;
+            // P2WorldManager.Instance().world.addBody(this.pooltable.whiteBall.p2Body);
+            // this.pooltable.whiteBall.gameObjectData.canBeRemoved = false;
             this.pooltable.whiteBall.setPosition(ballPositionCirclePosition.x, ballPositionCirclePosition.y);
             // if(this.poolTable.balls.cont)
             this.pooltable.balls.push(this.pooltable.whiteBall);

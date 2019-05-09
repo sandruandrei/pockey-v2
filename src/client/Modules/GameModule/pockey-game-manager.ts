@@ -57,8 +57,8 @@ export class PockeyGameManager {
     }
 
     protected onEndTurn(): void {
-        PockeyPlayerManager.Instance().player.onEndTurn();
         PockeyStateMachine.Instance().changeState(PockeyStates.onEndTurn);
+        PockeyPlayerManager.Instance().player.onEndTurn();
     }
 
     private onWhiteBallRepositioned(): void {
@@ -77,6 +77,7 @@ export class PockeyGameManager {
         } else if (state[0] == PockeyStates.onRearrangeStick) {
             this.startOnRearrange();
         } else if (state[0] == PockeyStates.onWatch) {
+            // PockeyPlayerManager.Instance().player.pockeyGameWorld.stopServerUpdate();
             PockeyPlayerManager.Instance().currentPlayerSocketID = PockeyPlayerManager.Instance().opponent.socketID;
             PockeyStateMachine.Instance().changeState(PockeyStates.onWatch);
             this.pooltableManager.addShadows();

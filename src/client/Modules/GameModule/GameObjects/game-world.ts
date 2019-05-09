@@ -42,7 +42,7 @@ export class GameWorld {
     //     this.rightGoalie.gameObjectData.name = 'rightGoalie';
     // }
 
-    public sendSnapshotToGameObjects(serverObjects: PockeyScreenShot): void {
+    public applySnapshotToGameObjects(serverObjects: PockeyScreenShot): void {
         this.lastReceivedScreenShotID = serverObjects.id;
         // console.log("last Received id: " + this.lastReceivedScreenShotID);
         _.forEach(serverObjects.gameElements, (serverObject: PockeyGameElementVO) => {
@@ -84,6 +84,7 @@ export class GameWorld {
 
     public stopServerUpdate(): void {
         this.isUpdatedFromServer = false;
+        console.log("server update stopped");
         this.reset();
     }
 

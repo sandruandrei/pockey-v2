@@ -132,6 +132,7 @@ export class StickGameObject extends GameObject {
         this.rotationEnabled = true;
         this.graphicObject.visible = true;
         this.graphicObject.alpha = 1;
+        this.graphicObject.rotation = this.gameObjectData.rotation;
         this.gameObjectData.alpha = 1;
 
         this.gameObjectData.state = PockeyStates.onRearrangeStick;
@@ -156,9 +157,12 @@ export class StickGameObject extends GameObject {
             this.graphicObject.alpha = this.gameObjectData.alpha;
             this.graphicObject.pivot.x = this.gameObjectData.pivot;
 
+//             console.log("is updating from server");
             return;
         }
         if (this.isActive) {
+//             console.log("is not updating from server");
+
             // console.log("stick intra la is active!!");
 
             // if (!MouseHandler.Instance().left.down) {
@@ -170,7 +174,7 @@ export class StickGameObject extends GameObject {
 
             if (MouseHandler.Instance().left.down) {
 
-                console.log("stick intra la left button down!!!");
+                // console.log("stick intra la left button down!!!");
 
                 this.rotationEnabled = false;
 // if(this.mouseReleased)
@@ -243,15 +247,15 @@ export class StickGameObject extends GameObject {
                 // console.log("stick intra la rotation is enabled!!");
 
                 let localPoint = this.graphicObject.parent.toLocal(
-                    new PIXI.Point(MouseHandler.Instance().position.x, MouseHandler.Instance().position.y));
-                this.opposite = localPoint.y - this.graphicObject.position.y;
-                this.adjacent = localPoint.x - this.graphicObject.position.x;
-                this.graphicObject.rotation = Math.atan2(this.opposite, this.adjacent);
+                    MouseHandler.Instance().getCurrentMousePosition());
+                this.opposite = localPoint.y - this.gameObjectData.yPos;
+                this.adjacent = localPoint.x - this.gameObjectData.xPos;
+                this.gameObjectData.rotation = Math.atan2(this.opposite, this.adjacent);
 
                 this.clickPointRegistered = false;
                 this.graphicObject.pivot.x = (this.graphicObject as StickGraphicObject).initialPivotPoint.x;
+                this.graphicObject.rotation = this.gameObjectData.rotation;
 
-                this.gameObjectData.rotation = this.graphicObject.rotation;
                 this.gameObjectData.pivot = this.graphicObject.pivot.x;
 
                 // if(this.raycastFollower)
@@ -299,7 +303,6 @@ export class StickGameObject extends GameObject {
         if (this.snapshotsBundle.length <= 0) {
             return;
         }
-
 //         console.log("inca intra la playsnapshot");
         this.isUpdatingFromServer = true;
         // console.log("goalie mover on play snapshot");
@@ -315,7 +318,8 @@ export class StickGameObject extends GameObject {
             else if (this.snapshotsBundle[0].state == PockeyStates.onRearrangeStick)
                 this.graphicObject.visible = true;
         }
-//         console.log("alpha: " + this.snapshotsBundle[0].alpha);
+        // console.log("stick rotation: " + this.snapshotsBundle[0].rotation);
+        // this.snapshotsBundle[0].rotation
         this.animationTween = TweenMax.to(this.gameObjectData, Settings.playerUpdateInterval, {
             rotation: this.snapshotsBundle[0].rotation,
             alpha: this.snapshotsBundle[0].alpha,
