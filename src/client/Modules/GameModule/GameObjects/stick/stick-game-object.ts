@@ -28,7 +28,7 @@ export class StickGameObject extends GameObject {
     public isActive: boolean = false;
     public power: number = 0;
     public rotationEnabled: boolean = false;
-    protected stickPowerFactor: number = 9;
+    protected stickPowerFactor: number = 12;
     protected clickPointRegistered: boolean = false;
     protected opposite: number;
     protected adjacent: number;

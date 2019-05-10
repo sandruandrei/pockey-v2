@@ -234,6 +234,8 @@ export class PoolTableManager {
         (this.pooltable.rightGoalie.graphicObject as GoalieGraphicObject).updateColor(rightSideColor);
         this.pooltable.rightGoal.updateColor(rightSideColor);
 
+        this.goalieMover.startMoving();
+
         _.forEach(this.pooltable.balls, (ball: BallGameObject) => {
             ball.setPosition(ball.initialPosition.x, ball.initialPosition.y);
             ball.reset();
