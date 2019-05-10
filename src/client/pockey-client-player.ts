@@ -50,7 +50,28 @@ export class PockeyClientPlayer extends Player {
         this.socket.on(PockeySocketMessages.ROUND_TIMER_UPDATE, this.onServerRoundTimerUpdate.bind(this));
         this.socket.on(PockeySocketMessages.HIDE_TIMER, this.onServerRoundTimerComplete.bind(this));
         this.socket.on(PockeySocketMessages.ALLOCATED_TIME_ELAPSED, this.onAllocatedTimeElapsed.bind(this));
-        // this.socket.on(PockeySocketMessages.ROUND_FINISHED, this.onRoundFinished.bind(this));
+        this.socket.on(PockeySocketMessages.ROUND_SCREEN_TIMER_UPDATE, this.onRoundScreenUpdate.bind(this));
+        this.socket.on(PockeySocketMessages.MATCH_FINISHED, this.onMatchFinished.bind(this));
+        this.socket.on(PockeySocketMessages.ROOM_CLOSED, this.onRoomClosed.bind(this));
+    }
+
+    private onRoomClosed(): void {
+
+    }
+
+    private onRoundScreenUpdate(time: number): void {
+        SignalsManager.DispatchSignal(PockeySignalTypes.UPDATE_CURRENT_ROUND_SCREEN_TEXT, [time.toString()]);
+    }
+
+    private onMatchFinished(roundVO: RoundVO): void {
+        if (this.data.socketID == roundVO.leftPlayerData.socketID) {
+            this.data = roundVO.leftPlayerData;
+            PockeyPlayerManager.Instance().opponent = roundVO.rightPlayerData;
+        } else {
+            PockeyPlayerManager.Instance().opponent = roundVO.leftPlayerData;
+            this.data = roundVO.rightPlayerData;
+        }
+        SignalsManager.DispatchSignal(PockeySignalTypes.MATCH_FINISHED, [roundVO]);
     }
 
     // private onRoundFinished(roundVO:RoundVO):void {
@@ -223,4 +244,7 @@ export class PockeyClientPlayer extends Player {
         // TweenMax.delayedCall(Settings.playerUpdateInterval, this.snapshotTimer.bind(this))
     }
 
+    public exitServerRoom() {
+        this.socket.emit(PockeySocketMessages.EXIT_SERVER_ROOM);
+    }
 }

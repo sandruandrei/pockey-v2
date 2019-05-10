@@ -230,7 +230,9 @@ export class BallGameObject extends PockeyGameObject {
 
     setPosition(x: number, y: number) {
         super.setPosition(x, y);
-
+        if (!this.initialPosition) {
+            this.initialPosition = new Vector2(x, y);
+        }
         // this.ballShadow.x = x;
         // this.ballShadow.y = y;
         //

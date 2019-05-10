@@ -271,11 +271,21 @@ export class PockeyServerIndex {
         });
 
         if (!roomByID) {
-            roomByID = new PockeyRoom(roomID, io);
+            roomByID = new PockeyRoom(roomID, io, this.deleteRoom.bind(this));
             this.rooms.push(roomByID);
         }
 
         return roomByID;
+    }
+
+    private deleteRoom(roomToDelete:PockeyRoom):void
+    {
+        const index = this.rooms.indexOf(roomToDelete, 0);
+        if (index > -1) {
+            this.rooms.splice(index, 1);
+        }
+
+        console.log("room deleted");
     }
 
     private updateUserDb(player: PockeyPlayerServer, data: any): void {

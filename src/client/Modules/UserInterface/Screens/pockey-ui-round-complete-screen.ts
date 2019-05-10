@@ -15,7 +15,7 @@ import {SignalsManager} from "../../../qFramework/Signals/signals-manager";
 import {AbstractScreen} from "../../../qFramework/AbstractModules/UserInterface/abstract-screen";
 import {Player} from "../../../../common/player";
 import {RoundCompleteType, RoundVO} from "../../../../common/pockey-value-objects";
-
+import {PockeyPlayerManager} from "../../../pockey-player-manager";
 
 
 export class RoundCompleteScreen extends AbstractScreen {
@@ -158,17 +158,17 @@ export class RoundCompleteScreen extends AbstractScreen {
     }
 
     private handleMatchComplete(): void {
-        // if (this.player.roundsWon >= 2) {
-        //     (this.textDiv as HTMLDivElement).innerText = "MATCH complete! you WiN!";
-        // } else if (this.opponent.roundsWon >= 2) {
-        //     (this.textDiv as HTMLDivElement).innerText = "MATCH complete! you lost!";
-        // }
-        // (this.roundNumberDiv as HTMLDivElement).style.background = "url(../Assets/Desktop/Images/hud_matchbanner-round" + this.currentRound.toString() + ".svg) bottom center / 100% no-repeat";
-        // (this.titleDiv as HTMLDivElement).innerText = "MATCH COMPLETE";
-        //
-        // (this.mainMenuButton as HTMLDivElement).style.display = "block";
-        // (this.newOpponentButton as HTMLDivElement).style.display = "block";
-        // (this.rematchButton as HTMLDivElement).style.display = "block";
+        if (PockeyPlayerManager.Instance().player.data.roundsWon >= 2) {
+            (this.textDiv as HTMLDivElement).innerText = "MATCH complete! you WiN!";
+        } else if (PockeyPlayerManager.Instance().opponent.roundsWon >= 2) {
+            (this.textDiv as HTMLDivElement).innerText = "MATCH complete! you lost!";
+        }
+        (this.roundNumberDiv as HTMLDivElement).style.background = "url(../Assets/Desktop/Images/hud_matchbanner-round" + this.currentRound.toString() + ".svg) bottom center / 100% no-repeat";
+        (this.titleDiv as HTMLDivElement).innerText = "MATCH COMPLETE";
+
+        (this.mainMenuButton as HTMLDivElement).style.display = "block";
+        (this.newOpponentButton as HTMLDivElement).style.display = "block";
+        (this.rematchButton as HTMLDivElement).style.display = "block";
     }
 
     private handleRematch(): void {
@@ -193,8 +193,7 @@ export class RoundCompleteScreen extends AbstractScreen {
         requestAnimationFrame(this.testDiv.bind(this));
     }*/
 
-    public hide():void
-    {
+    public hide(): void {
         console.log("this.div: " + this.div);
         super.hide();
     }

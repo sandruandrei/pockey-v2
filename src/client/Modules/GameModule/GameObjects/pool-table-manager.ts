@@ -235,6 +235,9 @@ export class PoolTableManager {
         this.pooltable.rightGoal.updateColor(rightSideColor);
 
         _.forEach(this.pooltable.balls, (ball: BallGameObject) => {
+            ball.setPosition(ball.initialPosition.x, ball.initialPosition.y);
+            ball.reset();
+            ball.graphicObject.alpha = 1;
             if (ball.ballType == BallType.Left) {
                 //PockeyPlayerManager.Instance().player.data.color
                 (ball.graphicObject as BallGraphicObject).updateColor(Utilities.BabylonHexToRGB(leftSideColor));

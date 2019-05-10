@@ -31,7 +31,7 @@ export class PockeySettings {
     public static PUCK_RADIUS: number = 25;
     public static PUCK_MASS: number = 0.8;
     public static DISTANCE_BETWEEN_BALLS_ON_RESET: number = 108;
-    public static BALLS_NUMBER_FOR_EACH_PLAYER: number = 2;
+    public static BALLS_NUMBER_FOR_EACH_PLAYER: number = 7;
     public static MIDDLE_TABLE_POS: Vector2 = new Vector2(0, 0);
     public static MIDDLE_TABLE_LEFT_POS: Vector2 = new Vector2(-244, 0);
     public static MIDDLE_TABLE_RIGHT_POS: Vector2 = new Vector2(244, 0);

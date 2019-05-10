@@ -18,6 +18,9 @@ export class PockeySocketMessages {
     public static HIDE_TIMER: string = "PockeySocketMessages." + "HIDE_TIMER";
     public static BALL_WAS_SHOT: string = "PockeySocketMessages." + "BALL_WAS_SHOT";
     public static ALLOCATED_TIME_ELAPSED: string = "PockeySocketMessages." + "ALLOCATED_TIME_ELAPSED";
-    public static ROUND_FINISHED: string = "PockeySocketMessages." + "ROUND_FINISHED";
+    public static ROUND_SCREEN_TIMER_UPDATE: string = "PockeySocketMessages." + "ROUND_SCREEN_TIMER_UPDATE";
+    public static MATCH_FINISHED: string = "PockeySocketMessages." + "MATCH_FINISHED";
+    public static EXIT_SERVER_ROOM: string = "PockeySocketMessages." + "EXIT_SERVER_ROOM";
+    public static ROOM_CLOSED: string = "PockeySocketMessages." + "ROOM_CLOSED";
 }
 

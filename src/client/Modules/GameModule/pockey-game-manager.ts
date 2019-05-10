@@ -40,10 +40,31 @@ export class PockeyGameManager {
         SignalsManager.AddSignalCallback(PockeySignalTypes.WHITE_BALL_REPOSITIONED, this.onWhiteBallRepositioned.bind(this));
         SignalsManager.AddSignalCallback(PockeySignalTypes.OWN_BALL_TOUCHED_FIRST, this.onOwnBallTouchedFirst.bind(this));
         SignalsManager.AddSignalCallback(PockeySignalTypes.SHOOT_BALL, this.onShoot.bind(this));
+        SignalsManager.AddSignalCallback(PockeySignalTypes.MATCH_FINISHED, this.onEndMatch.bind(this));
+        SignalsManager.AddSignalCallback(PockeySignalTypes.MAIN_MENU_BUTTON_CLICKED, this.onMainMenuButtonClicked.bind(this));
 
         // SignalsManager.AddSignalCallback(SignalsType.BEGIN_ROUND, this.startOnRearrange.bind(this));
 
         SignalsManager.AddSignalCallback(ConnectionSignalsType.GAME_SETUP_RECEIVED, this.onGameSetupReceived.bind(this));
+    }
+
+    private onMainMenuButtonClicked(): void {
+        // SignalsManager.DispatchSignal(ConnectionSignalsType.DISCONNECT_MY_SOCKET);
+
+        PockeyStateMachine.Instance().changeState(PockeyStates.onMainMenu);
+        SignalsManager.DispatchSignal(PockeySignalTypes.SHOW_MAIN_MENU);
+        SignalsManager.DispatchSignal(PockeySignalTypes.HIDE_ROUND_COMPLETE_SCREEN);
+        SignalsManager.DispatchSignal(PockeySignalTypes.HIDE_GAME_UI);
+        SignalsManager.DispatchSignal(PockeySignalTypes.HIDE_POOLTABLE);
+        SignalsManager.DispatchSignal(SignalsType.CHANGE_BACKGROUND, [Settings.mainBackgroundName, 0]);
+
+        PockeyPlayerManager.Instance().player.exitServerRoom();
+        // //@ts-ignore
+        // _.forEach(AbstractEntryPoint.scene.meshes, (mesh: any) => {
+        //     mesh.setEnabled(false);
+        // });
+
+        // this.reset();
     }
 
     protected onRoundComplete(roundVO: RoundVO): void {
@@ -67,6 +88,12 @@ export class PockeyGameManager {
         PockeyPlayerManager.Instance().player.onEndTurn();
     }
 
+    protected onEndMatch(data: RoundVO[]): void {
+        let roundVO: RoundVO = data[0];
+        PockeyStateMachine.Instance().changeState(PockeyStates.onEndMatch);
+        SignalsManager.DispatchSignal(PockeySignalTypes.SHOW_ROUND_COMPLETE_SCREEN, [roundVO]);
+    }
+
     private onWhiteBallRepositioned(): void {
         // this.selectPlayer();
         console.log("%c GameManager -> White Ball Repositioned", "color: #00bcd4");
@@ -77,6 +104,7 @@ export class PockeyGameManager {
 
     protected onChangePlayerState(state: PockeyStates[]): void {
         SignalsManager.DispatchSignal(PockeySignalTypes.HIDE_OPPONENT_FOUND_SCREEN);
+        SignalsManager.DispatchSignal(PockeySignalTypes.HIDE_ROUND_COMPLETE_SCREEN);
 
         if (state[0] == PockeyStates.onRepositionWhiteBall) {
             this.startOnReposition();
@@ -176,7 +204,6 @@ export class PockeyGameManager {
 
 
     }
-
 
 
     protected initializeOthers(): void {

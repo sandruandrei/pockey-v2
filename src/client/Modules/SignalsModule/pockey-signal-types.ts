@@ -97,6 +97,7 @@ export class PockeySignalTypes {
     public static CHANGE_WHITE_BALL_STATUS: string = "PockeySignalTypes." + "CHANGE_WHITE_BALL_STATUS";
     public static ASSIGN_PLAYER: string = "PockeySignalTypes." + "ASSIGN_PLAYER";
     public static REMATCH_CONFIRM_BUTTON_CLICKED: string = "PockeySignalTypes." + "REMATCH_CONFIRM_BUTTON_CLICKED";
+    public static MATCH_FINISHED: string = "PockeySignalTypes." + "MATCH_FINISHED";
 
     // public static UPDATE_OPPONENT_NAME: string = "PockeySignalTypes." + "UPDATE_OPPONENT_NAME";
     // public static UPDATE_OPPONENT_SCORE: string = "PockeySignalTypes." + "UPDATE_OPPONENT_SCORE";

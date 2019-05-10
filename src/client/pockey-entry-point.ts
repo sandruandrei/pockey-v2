@@ -417,6 +417,7 @@ export class PockeyEntryPoint extends AbstractEntryPoint {
         SignalsManager.CreateNewSignal(PockeySignalTypes.ASSIGN_PLAYER);
         SignalsManager.CreateNewSignal(PockeySignalTypes.MAIN_MENU_BUTTON_CLICKED);
         SignalsManager.CreateNewSignal(PockeySignalTypes.REMATCH_CONFIRM_BUTTON_CLICKED);
+        SignalsManager.CreateNewSignal(PockeySignalTypes.MATCH_FINISHED);
 
         // SignalsManager.CreateNewSignal(PockeySignalTypes.ANIMATE_PUCK_GOAL);
         // SignalsManager.CreateNewSignal(PockeySignalTypes.ANIMATE_PUCK_GOAL_STOP);

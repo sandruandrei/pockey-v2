@@ -26,18 +26,28 @@ export class PockeyRoom {
     private opponentBallScored: boolean = false;
     private currentPlayer: Player;
     private roundTimer: Timer;
+    private roundScreenTimer: Timer;
     private roundDuration: number = 20;
 
     private roundFinished: boolean = false;
     private matchFinished: boolean = false;
 
-    constructor(id: string, io: any) {
+    constructor(id: string, io: any, private selfDelete: Function) {
         this.id = id;
         this.io = io;
         // this.players.push(this.player1);
         // this.players.push(this.player2);
         console.log("room created");
         this.roundTimer = new Timer(this.onRoundTimerUpdate.bind(this), this.onRoundTimerComplete.bind(this));
+        this.roundScreenTimer = new Timer(this.onRoundScreenUpdate.bind(this), this.onRoundScreenComplete.bind(this));
+    }
+
+    private onRoundScreenUpdate(): void {
+        this.io.to(this.id).emit(PockeySocketMessages.ROUND_SCREEN_TIMER_UPDATE, this.roundScreenTimer.getCurrentTime());
+    }
+
+    private onRoundScreenComplete(): void {
+        this.sendStartRound();
     }
 
     private onRoundTimerUpdate(): void {
@@ -59,11 +69,20 @@ export class PockeyRoom {
     }
 
     public assignPlayer(player: Player): void {
-        player.data.roundWins = 0;
+        player.data.roundsWon = 0;
 
         player.socket.on(FrameworkSocketEvents.snapshotUpdate, (data: any) => {
             // console.log("playa: " + player);
             this.sendGameSnapshot(player.data.socketID, data);
+        });
+
+        player.socket.on(PockeySocketMessages.EXIT_SERVER_ROOM, () => {
+            if (player == this.players[0]) {
+                this.players[1].socket.emit(PockeySocketMessages.EXIT_SERVER_ROOM);
+            } else {
+                this.players[0].socket.emit(PockeySocketMessages.EXIT_SERVER_ROOM);
+            }
+            this.selfDelete(this);
         });
 
         player.socket.on(PockeySocketMessages.BALL_IN_THE_HALL, (ballType: BallType) => {
@@ -132,14 +151,14 @@ export class PockeyRoom {
 
         if (player.data.currentScore <= 0) {
             this.roundFinished = true;
-            player.data.roundWins++;
-            if (player.data.roundWins == 2) {
+            player.data.roundsWon++;
+            if (player.data.roundsWon == 2) {
                 this.matchFinished = true;
             }
         } else if (opponent.data.currentScore <= 0) {
             this.roundFinished = true;
-            opponent.data.roundWins++;
-            if (opponent.data.roundWins == 2) {
+            opponent.data.roundsWon++;
+            if (opponent.data.roundsWon == 2) {
                 this.matchFinished = true;
             }
         }
@@ -150,12 +169,22 @@ export class PockeyRoom {
         // this.roundTimer.stop();
 
         if (this.matchFinished) {
+            this.gameData.type = RoundCompleteType.matchComplete;
+            if (this.gameData.leftPlayerData == this.players[0].data.socketID) {
+                this.gameData.leftPlayerData = this.players[0].data;
+                this.gameData.rightPlayerData = this.players[1].data;
+            } else {
+                this.gameData.leftPlayerData = this.players[1].data;
+                this.gameData.rightPlayerData = this.players[0].data;
+            }
+            this.io.to(this.id).emit(PockeySocketMessages.MATCH_FINISHED, this.gameData);
 
         } else if (this.roundFinished) {
             this.gameData.roundNumber++;
 
             if (this.gameData.roundNumber == 2) {
                 this.resetTurnData();
+                this.roundFinished = false;
                 this.sendSecondRoundSetup();
             }
 
@@ -232,11 +261,13 @@ export class PockeyRoom {
         this.players[0].isFirstToStart = true;
         this.currentPlayer = this.players[0];
         this.players[0].data.type = BallType.Left;
-        this.players[0].data.currentScore = 2;
+        this.players[0].data.currentScore = 7;
+        this.players[0].data.roundsWon = 0;
         this.gameData.leftPlayerData = this.players[0].data;
 
         this.players[1].data.type = BallType.Right;
-        this.players[1].data.currentScore = 2;
+        this.players[1].data.currentScore = 7;
+        this.players[1].data.roundsWon = 0;
         this.gameData.rightPlayerData = this.players[1].data;
 
         this.io.to(this.id).emit(FrameworkSocketEvents.gameSetup, this.gameData);
@@ -244,63 +275,46 @@ export class PockeyRoom {
     }
 
     private sendSecondRoundSetup(): void {
-        // this.players[0].isFirstToStart = true;
-
-        // if (this.players[0].isFirstToStart) {
         this.gameData.type = RoundCompleteType.roundComplete;
         this.currentPlayer = this.players[1];
 
         this.players[1].data.type = BallType.Left;
-        this.players[1].data.currentScore = 2;
+        this.players[1].data.currentScore = 7;
         this.gameData.leftPlayerData = this.players[1].data;
 
         this.players[0].data.type = BallType.Right;
-        this.players[0].data.currentScore = 2;
+        this.players[0].data.currentScore = 7;
         this.gameData.rightPlayerData = this.players[0].data;
-        //
-        // } else {
-        //     this.gameData.leftPlayerData = this.players[0].data;
-        //     this.gameData.rightPlayerData = this.players[1].data;
-        // }
-
-        // this.currentPlayer = this.players[0];
-        // this.players[0].data.type = BallType.Left;
-        // this.players[0].data.currentScore = 7;
-        // this.gameData.leftPlayerData = this.players[0].data;
-        //
-        // this.players[1].data.type = BallType.Right;
-        // this.players[1].data.currentScore = 7;
-        // this.gameData.rightPlayerData = this.players[1].data;
 
         this.io.to(this.id).emit(FrameworkSocketEvents.gameSetup, this.gameData);
 
-
-        // this.gameData.type = RoundCompleteType.roundComplete
-        //
-        // if (this.players[0].isFirstToStart) {
-        //     this.gameData.leftPlayerData = this.players[1].data;
-        //     this.gameData.rightPlayerData = this.players[0].data;
-        // } else {
-        //     this.gameData.leftPlayerData = this.players[0].data;
-        //     this.gameData.rightPlayerData = this.players[1].data;
-        // }
-
-        // setTimeout(this.sendStartRound.bind(this), 3000);
-
+        this.roundScreenTimer.start(5);
     }
 
     private sendStartRound(): void {
-        if (this.players[0].isFirstToStart) {
-            this.players[1].socket.emit(PockeySocketMessages.CHANGE_STATE, PockeyStates.onWatch);
-            this.players[0].socket.emit(FrameworkSocketEvents.startSendingSnapshots);
-            this.players[0].socket.emit(PockeySocketMessages.CHANGE_STATE, PockeyStates.onRearrangeStick);
-        } else {
-            this.players[0].socket.emit(PockeySocketMessages.CHANGE_STATE, PockeyStates.onWatch);
-            this.players[1].socket.emit(FrameworkSocketEvents.startSendingSnapshots);
-            this.players[1].socket.emit(PockeySocketMessages.CHANGE_STATE, PockeyStates.onRearrangeStick);
+        if (this.gameData.roundNumber == 1) {
+            if (this.players[0].isFirstToStart) {
+                this.players[1].socket.emit(PockeySocketMessages.CHANGE_STATE, PockeyStates.onWatch);
+                this.players[0].socket.emit(FrameworkSocketEvents.startSendingSnapshots);
+                this.players[0].socket.emit(PockeySocketMessages.CHANGE_STATE, PockeyStates.onRearrangeStick);
+            } else {
+                this.players[0].socket.emit(PockeySocketMessages.CHANGE_STATE, PockeyStates.onWatch);
+                this.players[1].socket.emit(FrameworkSocketEvents.startSendingSnapshots);
+                this.players[1].socket.emit(PockeySocketMessages.CHANGE_STATE, PockeyStates.onRearrangeStick);
+            }
+        } else if (this.gameData.roundNumber == 2) {
+            if (this.players[1] == this.currentPlayer) {
+                this.players[0].socket.emit(PockeySocketMessages.CHANGE_STATE, PockeyStates.onWatch);
+                this.players[1].socket.emit(FrameworkSocketEvents.startSendingSnapshots);
+                this.players[1].socket.emit(PockeySocketMessages.CHANGE_STATE, PockeyStates.onRearrangeStick);
+            } else {
+                this.players[1].socket.emit(PockeySocketMessages.CHANGE_STATE, PockeyStates.onWatch);
+                this.players[0].socket.emit(FrameworkSocketEvents.startSendingSnapshots);
+                this.players[0].socket.emit(PockeySocketMessages.CHANGE_STATE, PockeyStates.onRearrangeStick);
+            }
         }
 
+
         this.roundTimer.start(this.roundDuration);
-        // this.roundTimeElapsed = false;
     }
 }

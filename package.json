@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Pockey - using lance, babel and webpack",
   "scripts": {
+    "start": "node index.js",
     "type-check": "tsc --noEmit",
     "type-check:watch": "npm run type-check -- --watch",
     "buildDevServer": "webpack --config webpack.dev.config.js --config-name server --display-modules",

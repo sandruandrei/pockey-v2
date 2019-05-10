@@ -25,7 +25,7 @@ export interface PockeyPlayerData {
     first_login_date?: {},
     type?: BallType,
     currentScore?: number
-    roundWins?: number
+    roundsWon?: number
 }
 
 // public id: string;
