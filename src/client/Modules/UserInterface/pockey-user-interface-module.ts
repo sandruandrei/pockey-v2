@@ -12,7 +12,7 @@ import {AbstractUserInterfaceModule} from "../../qFramework/AbstractModules/User
 import {PockeyUiMainScreen} from "./Screens/MainScreen/pockey-ui-main-screen";
 import {PockeyUiSearchingScreen} from "./Screens/pockey-ui-searching-screen";
 import {PockeyUiGameScreen} from "./Screens/GameScreen/pockey-ui-game-screen";
-import {RoundCompleteScreen, RoundCompleteType, RoundCompleteVO} from "./Screens/pockey-ui-round-complete-screen";
+import {RoundCompleteScreen} from "./Screens/pockey-ui-round-complete-screen";
 import {AbstractScreen} from "../../qFramework/AbstractModules/UserInterface/abstract-screen";
 import {Settings} from "../../qFramework/Settings";
 import {PockeyUiMainScreenMobile} from "./Screens/MainScreen/pockey-ui-main-screen-mobile";
@@ -21,6 +21,7 @@ import {PockeySignalTypes} from "../SignalsModule/pockey-signal-types";
 import {SignalsType} from "../../qFramework/Signals/signal-types";
 import {PockeyUiOpponentFoundScreen} from "./Screens/pockey-ui-opponent-found-screen";
 import {PockeySoundURLS} from "../SoundModule/pockey-sound-names";
+import {RoundCompleteType, RoundVO} from "../../../common/pockey-value-objects";
 
 
 
@@ -135,7 +136,7 @@ import {PockeySoundURLS} from "../SoundModule/pockey-sound-names";
             //     this.opponentFoundScreen.updateAvatar(avatarPath);
             // }
 
-            private onShowRoundScreen(params:RoundCompleteVO[]): void {
+            private onShowRoundScreen(params:RoundVO[]): void {
                  console.log("se arata on show winning!");
                 this.onHideOpponentFoundScreen();
                 this.onHideSearchingScreen();

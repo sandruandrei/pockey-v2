@@ -10,17 +10,16 @@
  */
 import {Player} from "../common/player";
 import {FrameworkSocketEvents} from "../client/qFramework/AbstractModules/Connection/connection-channels-and-messages";
-import {BallType, GameData} from "../common/pockey-game-settings";
 import {PockeySocketMessages} from "../client/Modules/ConnectionModule/pockey-connection-channels-and-messages";
-import * as _ from "lodash";
-import {PockeyStates} from "../client/Modules/StateMachine/pockey-state-machine";
+import {PockeyStates} from "../client/Modules/GameModule/StateMachine/pockey-state-machine";
 import {Timer} from "../client/qFramework/Utils/timer";
+import {BallType, RoundCompleteType, RoundVO} from "../common/pockey-value-objects";
 
 export class PockeyRoom {
     public id: string = "";
     private players: Player[] = [];
     public io: any;
-    private gameData: GameData = {roundNumber: 1, ballsNumber: 7};
+    private gameData: RoundVO = {roundNumber: 1, type: RoundCompleteType.opponentFound};
     private scoreUpdated: boolean = false;
     private whiteBallInTheHall: boolean = false;
     private ownBallFault: boolean = false;
@@ -46,7 +45,7 @@ export class PockeyRoom {
     }
 
     private onRoundTimerComplete(): void {
-        this.io.to(this.id).emit(PockeySocketMessages.ROUND_TIMER_COMPLETE);
+        this.io.to(this.id).emit(PockeySocketMessages.HIDE_TIMER);
         this.currentPlayer.socket.emit(PockeySocketMessages.ALLOCATED_TIME_ELAPSED);
         // this.roundTimeElapsed = true;
 
@@ -56,7 +55,7 @@ export class PockeyRoom {
 
         // this.currentPlayer.socket.emit(PockeySocketMessages.CHANGE_STATE, PockeyStates.onWatch);
 
-        // this.io.to(this.id).emit(PockeySocketMessages.ROUND_TIMER_COMPLETE, this.roundTimer.getCurrentTime());
+        // this.io.to(this.id).emit(PockeySocketMessages.HIDE_TIMER, this.roundTimer.getCurrentTime());
     }
 
     public assignPlayer(player: Player): void {
@@ -82,7 +81,7 @@ export class PockeyRoom {
         player.socket.on(PockeySocketMessages.BALL_WAS_SHOT, () => {
             // this.roundTimeElapsed = false;
             this.roundTimer.stop();
-            this.io.to(this.id).emit(PockeySocketMessages.ROUND_TIMER_COMPLETE);
+            this.io.to(this.id).emit(PockeySocketMessages.HIDE_TIMER);
         });
 
         this.players.push(player);
@@ -90,7 +89,7 @@ export class PockeyRoom {
         // console.log("room: " + this.id + " -> );
 
         if (this.players.length == 2) {
-            this.sendGameSetup();
+            this.sendFirstRoundSetup();
         }
     }
 
@@ -148,12 +147,21 @@ export class PockeyRoom {
 
     private checkNextTurn(): void {
 
+        // this.roundTimer.stop();
+
         if (this.matchFinished) {
 
         } else if (this.roundFinished) {
+            this.gameData.roundNumber++;
 
-        }
-        if (this.whiteBallInTheHall) {
+            if (this.gameData.roundNumber == 2) {
+                this.resetTurnData();
+                this.sendSecondRoundSetup();
+            }
+
+            // this.io.to(this.id).emit(PockeySocketMessages.ROUND_FINISHED, this.gameData);
+            // this.io.to(this.id).emit(PockeySocketMessages.ROUND_FINISHED);
+        } else if (this.whiteBallInTheHall) {
             this.currentPlayer.socket.emit(PockeySocketMessages.CHANGE_STATE, PockeyStates.onWatch);
             this.changeCurrentPlayer();
             this.currentPlayer.socket.emit(PockeySocketMessages.CHANGE_STATE, PockeyStates.onRepositionWhiteBall);
@@ -173,6 +181,7 @@ export class PockeyRoom {
             this.currentPlayer.socket.emit(FrameworkSocketEvents.startSendingSnapshots);
             this.roundTimer.start(this.roundDuration);
         } else {
+            this.resetTurnData();
             this.currentPlayer.socket.emit(PockeySocketMessages.CHANGE_STATE, PockeyStates.onRearrangeStick);
             this.currentPlayer.socket.emit(FrameworkSocketEvents.startSendingSnapshots);
             this.roundTimer.start(this.roundDuration);
@@ -182,6 +191,10 @@ export class PockeyRoom {
 
     private changeCurrentPlayer(): void {
         this.currentPlayer = (this.currentPlayer == this.players[0]) ? this.players[1] : this.players[0];
+        this.resetTurnData();
+    }
+
+    private resetTurnData(): void {
         this.opponentBallScored = false;
         this.whiteBallInTheHall = false;
         this.ownBallFault = false;
@@ -215,17 +228,65 @@ export class PockeyRoom {
         }
     }
 
-    private sendGameSetup(): void {
+    private sendFirstRoundSetup(): void {
         this.players[0].isFirstToStart = true;
         this.currentPlayer = this.players[0];
         this.players[0].data.type = BallType.Left;
-        this.players[0].data.currentScore = 7;
+        this.players[0].data.currentScore = 2;
+        this.gameData.leftPlayerData = this.players[0].data;
 
         this.players[1].data.type = BallType.Right;
-        this.players[1].data.currentScore = 7;
+        this.players[1].data.currentScore = 2;
+        this.gameData.rightPlayerData = this.players[1].data;
 
-        this.io.to(this.id).emit(FrameworkSocketEvents.gameSetup, [this.players[0].data, this.players[1].data, this.gameData]);
+        this.io.to(this.id).emit(FrameworkSocketEvents.gameSetup, this.gameData);
         setTimeout(this.sendStartRound.bind(this), 3000);
+    }
+
+    private sendSecondRoundSetup(): void {
+        // this.players[0].isFirstToStart = true;
+
+        // if (this.players[0].isFirstToStart) {
+        this.gameData.type = RoundCompleteType.roundComplete;
+        this.currentPlayer = this.players[1];
+
+        this.players[1].data.type = BallType.Left;
+        this.players[1].data.currentScore = 2;
+        this.gameData.leftPlayerData = this.players[1].data;
+
+        this.players[0].data.type = BallType.Right;
+        this.players[0].data.currentScore = 2;
+        this.gameData.rightPlayerData = this.players[0].data;
+        //
+        // } else {
+        //     this.gameData.leftPlayerData = this.players[0].data;
+        //     this.gameData.rightPlayerData = this.players[1].data;
+        // }
+
+        // this.currentPlayer = this.players[0];
+        // this.players[0].data.type = BallType.Left;
+        // this.players[0].data.currentScore = 7;
+        // this.gameData.leftPlayerData = this.players[0].data;
+        //
+        // this.players[1].data.type = BallType.Right;
+        // this.players[1].data.currentScore = 7;
+        // this.gameData.rightPlayerData = this.players[1].data;
+
+        this.io.to(this.id).emit(FrameworkSocketEvents.gameSetup, this.gameData);
+
+
+        // this.gameData.type = RoundCompleteType.roundComplete
+        //
+        // if (this.players[0].isFirstToStart) {
+        //     this.gameData.leftPlayerData = this.players[1].data;
+        //     this.gameData.rightPlayerData = this.players[0].data;
+        // } else {
+        //     this.gameData.leftPlayerData = this.players[0].data;
+        //     this.gameData.rightPlayerData = this.players[1].data;
+        // }
+
+        // setTimeout(this.sendStartRound.bind(this), 3000);
+
     }
 
     private sendStartRound(): void {

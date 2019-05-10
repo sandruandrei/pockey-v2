@@ -1,5 +1,5 @@
 import {SocketClient} from "../../qFramework/AbstractModules/Connection/socket-client";
-import {PockeyPlayerManager} from "../GameModule/pockey-player-manager";
+import {PockeyPlayerManager} from "../../pockey-player-manager";
 
 export class PockeySocketClient extends SocketClient {
 

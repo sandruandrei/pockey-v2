@@ -19,7 +19,7 @@ import {
 import * as _ from "lodash";
 // import TweenMax = gsap.TweenMax;
 import {TweenMax} from "gsap";
-import {PockeyPlayerManager} from "../../../../GameModule/pockey-player-manager";
+import {PockeyPlayerManager} from "../../../../../pockey-player-manager";
 
 export class LoginElements {
     private startBtn: HTMLDivElement | undefined;

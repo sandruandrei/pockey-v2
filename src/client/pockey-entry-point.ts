@@ -28,7 +28,7 @@ import {PockeyUserInterfaceModule} from "./Modules/UserInterface/pockey-user-int
 import {PockeyGameModule} from "./Modules/GameModule/pockey-game-module";
 import {PockeySoundURLS} from "./Modules/SoundModule/pockey-sound-names";
 import * as _ from "lodash";
-import {PockeyStateMachine} from "./Modules/StateMachine/pockey-state-machine";
+import {PockeyStateMachine} from "./Modules/GameModule/StateMachine/pockey-state-machine";
 
 export class PockeyEntryPoint extends AbstractEntryPoint {
     private gameModule: AbstractModule;

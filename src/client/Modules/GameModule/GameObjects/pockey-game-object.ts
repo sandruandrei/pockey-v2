@@ -10,7 +10,7 @@
  */
 import {GameObject} from "../../../qFramework/AbstractModules/GameModule/game-object";
 import * as p2 from "p2";
-import {BallType} from "../../../../common/pockey-game-settings";
+import {BallType} from "../../../../common/pockey-value-objects";
 
 export class PockeyGameObject extends GameObject {
     private _p2Body: p2.Body;

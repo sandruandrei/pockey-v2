@@ -11,9 +11,9 @@ import * as p2 from "p2";
 import {Settings} from "../../../../qFramework/Settings";
 import * as _ from "lodash";
 import {PockeyGameObject} from "../pockey-game-object";
-import {BallType} from "../../../../../common/pockey-game-settings";
 import {BallGraphicObject} from "./ball-graphic-object";
-import {PockeyPlayerManager} from "../../pockey-player-manager";
+import {PockeyPlayerManager} from "../../../../pockey-player-manager";
+import {BallType} from "../../../../../common/pockey-value-objects";
 
 
 export class BallGameObject extends PockeyGameObject {
@@ -122,6 +122,7 @@ export class BallGameObject extends PockeyGameObject {
         if (value == true) {
             // console.log("intra la enabled false!");
             this.reset();
+            this.graphicObject.alpha = 1;
         }
     }
 
@@ -621,7 +622,9 @@ export class BallGameObject extends PockeyGameObject {
         P2WorldManager.Instance().world.addBody(this.p2Body);
         P2WorldManager.Instance().world.addBody(this.p2Shadow);
         // this.removedFromArray = false;
-        this.graphicObject.visible = true;
+        (this.graphicObject as BallGraphicObject).reset();
+        this.gameObjectData.alpha = this.graphicObject.alpha;
+        this.gameObjectData.scale = this.graphicObject.scale.x;
         // this.removed = false;
     }
 

@@ -18,7 +18,7 @@ import {
 } from "../../../../../qFramework/AbstractModules/Connection/database-connector";
 import {writeCookie} from "../../../../../qFramework/Utils/cookie";
 import * as _ from "lodash";
-import {PockeyPlayerManager} from "../../../../GameModule/pockey-player-manager";
+import {PockeyPlayerManager} from "../../../../../pockey-player-manager";
 
 
 export class PlayerAvatarCustomizer {

@@ -19,10 +19,10 @@ import {
     FrameworkSocketNamespaces
 } from "../client/qFramework/AbstractModules/Connection/connection-channels-and-messages";
 
-import {WinStatus} from "../common/pockey-game-settings";
 import {PockeyRoom} from "./pockey-room";
 import {PockeyPlayerServer} from "./pockey-player-server";
 import {Player} from "../common/player";
+import {WinStatus} from "../common/pockey-value-objects";
 
 export class PockeyServerIndex {
     protected file: any;

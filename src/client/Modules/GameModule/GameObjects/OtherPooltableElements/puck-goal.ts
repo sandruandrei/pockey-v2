@@ -8,8 +8,8 @@
  *
  *  Created by Sandru Andrei on 10/1/2018
  */
-import {BallType} from "../../../../../common/pockey-game-settings";
 import {TweenMax} from "gsap";
+import {BallType} from "../../../../../common/pockey-value-objects";
 
 
 export class PuckGoal extends PIXI.Container {

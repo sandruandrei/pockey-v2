@@ -9,10 +9,10 @@
  *  Created by Sandru Andrei on 2/5/2019
  */
 import {AbstractScreen} from "../../../qFramework/AbstractModules/UserInterface/abstract-screen";
-import {RoundCompleteType} from "./pockey-ui-round-complete-screen";
 import {InventoryVO, PockeySettings} from "../../../pockey-settings";
 import * as _ from "lodash";
-import {PockeyPlayerManager} from "../../GameModule/pockey-player-manager";
+import {PockeyPlayerManager} from "../../../pockey-player-manager";
+import {RoundCompleteType} from "../../../../common/pockey-value-objects";
 
 export class PockeyUiOpponentFoundScreen extends AbstractScreen {
     private roundBeginsText: HTMLDivElement | undefined;

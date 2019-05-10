@@ -23,7 +23,7 @@ import * as _ from "lodash";
 import {Settings} from "../../../../../qFramework/Settings";
 import {InventoryButtonMobile} from "./inventory-button-mobile";
 import {SignalsType} from "../../../../../qFramework/Signals/signal-types";
-import {PockeyPlayerManager} from "../../../../GameModule/pockey-player-manager";
+import {PockeyPlayerManager} from "../../../../../pockey-player-manager";
 
 
 export class PockeyInventoryMenu {

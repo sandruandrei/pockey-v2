@@ -11,16 +11,18 @@
 import {SignalsManager} from "../../qFramework/Signals/signals-manager";
 import {PockeySignalTypes} from "../SignalsModule/pockey-signal-types";
 import {Settings} from "../../qFramework/Settings";
-import {PockeyStateMachine, PockeyStates} from "../StateMachine/pockey-state-machine";
+import {PockeyStateMachine, PockeyStates} from "./StateMachine/pockey-state-machine";
 import {ConnectionSignalsType, SignalsType} from "../../qFramework/Signals/signal-types";
 import {PockeySettings} from "../../pockey-settings";
-import {BallType, GameData} from "../../../common/pockey-game-settings";
-import {PockeyPlayerManager} from "./pockey-player-manager";
+import {PockeyPlayerManager} from "../../pockey-player-manager";
 import {PoolTableManager} from "./GameObjects/pool-table-manager";
+import {BallType, RoundVO} from "../../../common/pockey-value-objects";
+import {TweenMax} from "gsap";
 
 export class PockeyGameManager {
 
     protected pooltableManager: PoolTableManager;
+    protected currentRound: number = 0;
 
     constructor(pooltableManager: PoolTableManager) {
         this.registerSignals();
@@ -42,6 +44,10 @@ export class PockeyGameManager {
         // SignalsManager.AddSignalCallback(SignalsType.BEGIN_ROUND, this.startOnRearrange.bind(this));
 
         SignalsManager.AddSignalCallback(ConnectionSignalsType.GAME_SETUP_RECEIVED, this.onGameSetupReceived.bind(this));
+    }
+
+    protected onRoundComplete(roundVO: RoundVO): void {
+        SignalsManager.DispatchSignal(PockeySignalTypes.SHOW_ROUND_COMPLETE_SCREEN, [roundVO]);
     }
 
     protected onShoot(): void {
@@ -100,20 +106,20 @@ export class PockeyGameManager {
         this.pooltableManager.startOnRearrange();
     }
 
-    protected onGameSetupReceived(data: GameData[]): void {
+    protected onGameSetupReceived(data: RoundVO[]): void {
 
-        let roundNumber: number = data[0].roundNumber;
+        this.currentRound = data[0].roundNumber;
         // SignalsManager.DispatchSignal(PockeySignalTypes.INVENTORY_ITEM_UPDATED);
 
-        switch (roundNumber) {
+        switch (this.currentRound) {
             case (1): {
-                this.prepareFirstRound();
+                this.prepareFirstRound(data[0]);
                 break;
             }
-            // case (2): {
-            //     this.prepareSecondRound();
-            //     break;
-            // }
+            case (2): {
+                this.prepareSecondRound(data[0]);
+                break;
+            }
             // case (3): {
             //     this.prepareThirdRound();
             //     break;
@@ -121,46 +127,57 @@ export class PockeyGameManager {
         }
     }
 
-    protected prepareFirstRound(): void {
+    protected prepareFirstRound(roundVO: RoundVO): void {
         console.log("on prepare first round");
         PockeyStateMachine.Instance().changeState(PockeyStates.onPrepareRoundOne);
 
-        this.updateTableElements();
-        this.updateUIElements();
+        // this.updateTableElements();
+        this.updateUIElements(roundVO);
     }
 
-    protected updateUIElements(): void {
-        SignalsManager.DispatchSignal(PockeySignalTypes.SET_SIDES_TYPE);
-        SignalsManager.DispatchSignal(PockeySignalTypes.HIDE_SEARCHING_SCREEN);
-        SignalsManager.DispatchSignal(PockeySignalTypes.HIDE_ROUND_COMPLETE_SCREEN);
-        SignalsManager.DispatchSignal(PockeySignalTypes.SHOW_OPPONENT_FOUND_SCREEN);
-        SignalsManager.DispatchSignal(PockeySignalTypes.SHOW_GAME_UI);
+    protected prepareSecondRound(roundVO: RoundVO): void {
+        // console.log("on prepare second round");
+        PockeyStateMachine.Instance().changeState(PockeyStates.onPrepareRoundTwo);
 
-        let tableFeltID: string = (PockeyPlayerManager.Instance().player.isFirstToStart) ? PockeyPlayerManager.Instance().player.data.felt : PockeyPlayerManager.Instance().opponent.felt;
-
-        SignalsManager.DispatchSignal(PockeySignalTypes.CHANGE_POOLTABLE_FELT, [tableFeltID]);
+        // this.updateTableElements();
+        this.updateUIElements(roundVO);
     }
 
-    protected updateTableElements(): void {
-        /*
-        *  SignalsManager.DispatchSignal(PockeySignalTypes.HIDE_ROUND_COMPLETE_SCREEN);
+    protected updateUIElements(roundVO: RoundVO): void {
+        if (this.currentRound == 1) {
+            SignalsManager.DispatchSignal(PockeySignalTypes.SHOW_OPPONENT_FOUND_SCREEN);
+            SignalsManager.DispatchSignal(PockeySignalTypes.HIDE_SEARCHING_SCREEN);
+            SignalsManager.DispatchSignal(PockeySignalTypes.SHOW_GAME_UI);
 
+            let tableFeltID: string = (PockeyPlayerManager.Instance().player.isFirstToStart) ? PockeyPlayerManager.Instance().player.data.felt : PockeyPlayerManager.Instance().opponent.felt;
+            let stickSkinID: string = (!PockeyPlayerManager.Instance().player.isFirstToStart) ? PockeyPlayerManager.Instance().player.data.stick : PockeyPlayerManager.Instance().opponent.stick;
+            let pooltableDecalID: string = (!PockeyPlayerManager.Instance().player.isFirstToStart) ? PockeyPlayerManager.Instance().player.data.decal : PockeyPlayerManager.Instance().opponent.decal;
+
+            SignalsManager.DispatchSignal(PockeySignalTypes.SET_SIDES_TYPE);
+            SignalsManager.DispatchSignal(PockeySignalTypes.CHANGE_POOLTABLE_FELT, [tableFeltID]);
+            SignalsManager.DispatchSignal(PockeySignalTypes.UPDATE_STICK_SKIN, [stickSkinID]);
+            SignalsManager.DispatchSignal(PockeySignalTypes.CHANGE_POOLTABLE_DECAL, [pooltableDecalID]);
+        } else if (this.currentRound == 2) {
+            let tableFeltID: string = (!PockeyPlayerManager.Instance().player.isFirstToStart) ? PockeyPlayerManager.Instance().player.data.felt : PockeyPlayerManager.Instance().opponent.felt;
+            let stickSkinID: string = (!PockeyPlayerManager.Instance().player.isFirstToStart) ? PockeyPlayerManager.Instance().player.data.stick : PockeyPlayerManager.Instance().opponent.stick;
+            let pooltableDecalID: string = (!PockeyPlayerManager.Instance().player.isFirstToStart) ? PockeyPlayerManager.Instance().player.data.decal : PockeyPlayerManager.Instance().opponent.decal;
+
+            SignalsManager.DispatchSignal(PockeySignalTypes.SHOW_ROUND_COMPLETE_SCREEN, [roundVO]);
+            TweenMax.delayedCall(4, () => {
                 SignalsManager.DispatchSignal(PockeySignalTypes.SET_SIDES_TYPE);
-
-                console.log("table felt ce plm: " + this.currentTableFeltID);
-                SignalsManager.DispatchSignal(PockeySignalTypes.CHANGE_POOLTABLE_FELT, [this.currentTableFeltID]);
-                //////////////////////////////
-                SignalsManager.DispatchSignal(PockeySignalTypes.SHOW_GAME_UI);*/
-        if (PockeyPlayerManager.Instance().player.isFirstToStart) {
-            SignalsManager.DispatchSignal(PockeySignalTypes.UPDATE_STICK_SKIN, [PockeyPlayerManager.Instance().player.data.stick]);
-            SignalsManager.DispatchSignal(PockeySignalTypes.CHANGE_POOLTABLE_DECAL, [PockeyPlayerManager.Instance().player.data.decal]);
-            SignalsManager.DispatchSignal(PockeySignalTypes.CHANGE_POOLTABLE_FELT, [PockeyPlayerManager.Instance().player.data.felt]);
-        } else {
-            SignalsManager.DispatchSignal(PockeySignalTypes.UPDATE_STICK_SKIN, [PockeyPlayerManager.Instance().opponent.stick]);
-            SignalsManager.DispatchSignal(PockeySignalTypes.CHANGE_POOLTABLE_DECAL, [PockeyPlayerManager.Instance().opponent.decal]);
-            SignalsManager.DispatchSignal(PockeySignalTypes.CHANGE_POOLTABLE_FELT, [PockeyPlayerManager.Instance().opponent.felt]);
+                SignalsManager.DispatchSignal(PockeySignalTypes.CHANGE_POOLTABLE_FELT, [tableFeltID]);
+                SignalsManager.DispatchSignal(PockeySignalTypes.UPDATE_STICK_SKIN, [stickSkinID]);
+                SignalsManager.DispatchSignal(PockeySignalTypes.CHANGE_POOLTABLE_DECAL, [pooltableDecalID]);
+            });
         }
+
+
+        // SignalsManager.DispatchSignal(PockeySignalTypes.HIDE_ROUND_COMPLETE_SCREEN);
+
+
     }
+
+
 
     protected initializeOthers(): void {
 

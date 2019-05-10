@@ -73,7 +73,8 @@ export class PockeyStateMachine {
         this.fsm.from(PockeyStates.onPrepareRoundOne).to(PockeyStates.onWatch);
         this.fsm.from(PockeyStates.onPrepareRoundOne).to(PockeyStates.onRearrangeStick);
 
-        this.fsm.from(PockeyStates.onRoundEnd).to(PockeyStates.onPrepareRoundTwo);
+        this.fsm.from(PockeyStates.onEndTurn).to(PockeyStates.onPrepareRoundTwo);
+        this.fsm.from(PockeyStates.onWatch).to(PockeyStates.onPrepareRoundTwo);
         this.fsm.from(PockeyStates.onPrepareRoundTwo).to(PockeyStates.onRearrangeStick);
         this.fsm.from(PockeyStates.onPrepareRoundTwo).to(PockeyStates.onWatch);
 

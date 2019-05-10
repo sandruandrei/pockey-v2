@@ -20,11 +20,11 @@ import {StickGameObject} from "./stick/stick-game-object";
 import {Vector2} from "../../../qFramework/Utils/Vector2";
 // import {WhiteBallGameObject} from "./ball/white-ball-game-object";
 import {Pocket} from "./OtherPooltableElements/pocket";
-import {BallType} from "../../../../common/pockey-game-settings";
 import {BallGameObject} from "./ball/ball-game-object";
 import * as _ from "lodash";
 import {BallBlocker} from "./OtherPooltableElements/ball-blocker";
 import {MaterialType} from "../p2-world-manager";
+import {BallType} from "../../../../common/pockey-value-objects";
 
 // import {BallGameObject} from "./ball/ball-game-object";
 

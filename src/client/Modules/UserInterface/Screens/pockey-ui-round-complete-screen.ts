@@ -14,20 +14,9 @@ import {PockeyConnectionSignals, PockeySignalTypes} from "../../SignalsModule/po
 import {SignalsManager} from "../../../qFramework/Signals/signals-manager";
 import {AbstractScreen} from "../../../qFramework/AbstractModules/UserInterface/abstract-screen";
 import {Player} from "../../../../common/player";
+import {RoundCompleteType, RoundVO} from "../../../../common/pockey-value-objects";
 
-export enum RoundCompleteType {
-    matchComplete,
-    roundComplete,
-    playerDisconnected,
-    rematch
-}
 
-export interface RoundCompleteVO {
-    type?: RoundCompleteType,
-    roundNumber?: number,
-    // playerDisconnected,
-    // rematch
-}
 
 export class RoundCompleteScreen extends AbstractScreen {
     // protected div: HTMLDivElement | undefined;
@@ -140,7 +129,7 @@ export class RoundCompleteScreen extends AbstractScreen {
         (this.textDiv as HTMLDivElement).innerText = "get ready for round two in " + text;
     }
 
-    public show(params: RoundCompleteVO): void {
+    public show(params: RoundVO): void {
 
         if (params && params.roundNumber) {
             this.currentRound = params.roundNumber;

@@ -8,20 +8,19 @@
  *
  *  Created by Sandru Andrei on 4/9/2019
  */
-import {Player} from "../../../common/player";
-import {FrameworkSocketEvents} from "../../qFramework/AbstractModules/Connection/connection-channels-and-messages";
-import {PockeyPlayerData} from "../../../common/pockey-player-data";
+import {Player} from "../common/player";
+import {FrameworkSocketEvents} from "./qFramework/AbstractModules/Connection/connection-channels-and-messages";
+import {PockeyPlayerData} from "../common/pockey-player-data";
 import {PockeyPlayerManager} from "./pockey-player-manager";
-import {SignalsManager} from "../../qFramework/Signals/signals-manager";
-import {ConnectionSignalsType} from "../../qFramework/Signals/signal-types";
-import {GameWorld} from "./GameObjects/game-world";
-import {PockeySocketMessages} from "../ConnectionModule/pockey-connection-channels-and-messages";
-import {PockeySignalTypes} from "../SignalsModule/pockey-signal-types";
-import {BallType} from "../../../common/pockey-game-settings";
-import {PockeyStates} from "../StateMachine/pockey-state-machine";
-import {PockeyScreenShot} from "../../../common/pockey-value-objects";
-import {InventoryVO, PockeySettings} from "../../pockey-settings";
-import {Utilities} from "../../qFramework/Utils/utilies";
+import {SignalsManager} from "./qFramework/Signals/signals-manager";
+import {ConnectionSignalsType} from "./qFramework/Signals/signal-types";
+import {GameWorld} from "./Modules/GameModule/GameObjects/game-world";
+import {PockeySocketMessages} from "./Modules/ConnectionModule/pockey-connection-channels-and-messages";
+import {PockeySignalTypes} from "./Modules/SignalsModule/pockey-signal-types";
+import {PockeyStates} from "./Modules/GameModule/StateMachine/pockey-state-machine";
+import {BallType, PockeyScreenShot, RoundVO} from "../common/pockey-value-objects";
+import {InventoryVO, PockeySettings} from "./pockey-settings";
+import {Utilities} from "./qFramework/Utils/utilies";
 import * as _ from "lodash";
 
 // import {PockeyGameElementVO} from "../common/pockey-value-objects";
@@ -49,9 +48,15 @@ export class PockeyClientPlayer extends Player {
         this.socket.on(PockeySocketMessages.SCORE_UPDATED, this.onScoreUpdated.bind(this));
         this.socket.on(PockeySocketMessages.CHANGE_STATE, this.onChangePlayerState.bind(this));
         this.socket.on(PockeySocketMessages.ROUND_TIMER_UPDATE, this.onServerRoundTimerUpdate.bind(this));
-        this.socket.on(PockeySocketMessages.ROUND_TIMER_COMPLETE, this.onServerRoundTimerComplete.bind(this));
+        this.socket.on(PockeySocketMessages.HIDE_TIMER, this.onServerRoundTimerComplete.bind(this));
         this.socket.on(PockeySocketMessages.ALLOCATED_TIME_ELAPSED, this.onAllocatedTimeElapsed.bind(this));
+        // this.socket.on(PockeySocketMessages.ROUND_FINISHED, this.onRoundFinished.bind(this));
     }
+
+    // private onRoundFinished(roundVO:RoundVO):void {
+    //
+    //     SignalsManager.DispatchSignal(ConnectionSignalsType.GAME_SETUP_RECEIVED, [roundVO]);
+    // }
 
     private onAllocatedTimeElapsed(): void {
         SignalsManager.DispatchSignal(PockeySignalTypes.END_TURN);
@@ -109,40 +114,54 @@ export class PockeyClientPlayer extends Player {
     //     PockeyPlayerManager.Instance().player.startSendingSnapshots();
     // }
 
-    protected onGameSetup(data: any[]): void {
-        let leftPlayerData: PockeyPlayerData = data[0];
-        let rightPlayerData: PockeyPlayerData = data[1];
+    protected onGameSetup(data: RoundVO): void {
+        let leftPlayerData: PockeyPlayerData = data.leftPlayerData;
+        let rightPlayerData: PockeyPlayerData = data.rightPlayerData;
 
-        if (this.data.socketID == leftPlayerData.socketID) {
-            this.isFirstToStart = true;
-            this.data = leftPlayerData;
+        if (data.roundNumber == 1) {
+            if (this.data.socketID == leftPlayerData.socketID) {
+                this.isFirstToStart = true;
+                this.data = leftPlayerData;
 
-            PockeyPlayerManager.Instance().opponent = rightPlayerData;
+                PockeyPlayerManager.Instance().opponent = rightPlayerData;
+                PockeyPlayerManager.Instance().currentPlayerSocketID = leftPlayerData.socketID;
+
+                console.log("I'll start first biatch!");
+            } else {
+                this.isFirstToStart = false;
+                this.data = rightPlayerData;
+
+                PockeyPlayerManager.Instance().opponent = leftPlayerData;
+                PockeyPlayerManager.Instance().currentPlayerSocketID = PockeyPlayerManager.Instance().opponent.socketID;
+                console.log("I'll start second because i is a noooob!");
+            }
+
+            if (PockeyPlayerManager.Instance().opponent.color == PockeyPlayerManager.Instance().player.data.color) {
+                // // @ts-ignore
+                // let oldColor:number = PockeyPlayerManager.Instance().player.data.color;
+                let opponentColor: string = PockeyPlayerManager.Instance().opponent.color;
+                _.forEach(PockeySettings.LARGE_COLORS_ARRAY, (colorVO: InventoryVO) => {
+                    if (colorVO.id == opponentColor) {
+                        PockeyPlayerManager.Instance().opponent.color = Utilities.ColorToPlainString(colorVO.complementaryColor);
+                        // console.log("NEW OPPONENT COLOR");
+                        return false;
+                    }
+                });
+            }
+        } else if (data.roundNumber == 2) {
+            if (this.data.socketID == leftPlayerData.socketID) {
+                this.data = leftPlayerData;
+                PockeyPlayerManager.Instance().opponent = rightPlayerData;
+            } else {
+                this.data = rightPlayerData;
+                PockeyPlayerManager.Instance().opponent = leftPlayerData;
+            }
+
             PockeyPlayerManager.Instance().currentPlayerSocketID = leftPlayerData.socketID;
 
-            console.log("I'll start first biatch!");
-        } else {
-            this.isFirstToStart = false;
-            this.data = rightPlayerData;
-
-            PockeyPlayerManager.Instance().opponent = leftPlayerData;
-            PockeyPlayerManager.Instance().currentPlayerSocketID = PockeyPlayerManager.Instance().opponent.socketID;
-            console.log("I'll start second because i is a noooob!");
         }
 
-        if (PockeyPlayerManager.Instance().opponent.color == PockeyPlayerManager.Instance().player.data.color) {
-            // // @ts-ignore
-            // let oldColor:number = PockeyPlayerManager.Instance().player.data.color;
-            let opponentColor: string = PockeyPlayerManager.Instance().opponent.color;
-            _.forEach(PockeySettings.LARGE_COLORS_ARRAY, (colorVO: InventoryVO) => {
-                if (colorVO.id == opponentColor) {
-                    PockeyPlayerManager.Instance().opponent.color = Utilities.ColorToPlainString(colorVO.complementaryColor);
-                    // console.log("NEW OPPONENT COLOR");
-                    return false;
-                }
-            });
-        }
-        SignalsManager.DispatchSignal(ConnectionSignalsType.GAME_SETUP_RECEIVED, [data[2]]);
+        SignalsManager.DispatchSignal(ConnectionSignalsType.GAME_SETUP_RECEIVED, [data]);
 
         // console.log("-------------------");
         // console.log("on game setup data: ");

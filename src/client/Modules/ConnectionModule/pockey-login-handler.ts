@@ -16,7 +16,7 @@ import {LoginHandler} from "../../qFramework/AbstractModules/Connection/login-ha
 import {readCookie, writeCookie} from "../../qFramework/Utils/cookie";
 import * as _ from "lodash";
 import {DatabaseConnector} from "../../qFramework/AbstractModules/Connection/database-connector";
-import {PockeyPlayerManager} from "../GameModule/pockey-player-manager";
+import {PockeyPlayerManager} from "../../pockey-player-manager";
 import {PockeyPlayerData} from "../../../common/pockey-player-data";
 import {SignalsType} from "../../qFramework/Signals/signal-types";
 

@@ -6,9 +6,9 @@ import * as _ from "lodash";
 import {Settings} from "../../../../qFramework/Settings";
 import {TweenMax} from 'gsap';
 import {Player} from "../../../../../common/player";
-import {PockeyPlayerManager} from "../../../GameModule/pockey-player-manager";
-import {BallType} from "../../../../../common/pockey-game-settings";
+import {PockeyPlayerManager} from "../../../../pockey-player-manager";
 import {PockeyPlayerData} from "../../../../../common/pockey-player-data";
+import {BallType} from "../../../../../common/pockey-value-objects";
 
 export interface PlayerGraphicsInterface {
     data?: PockeyPlayerData,

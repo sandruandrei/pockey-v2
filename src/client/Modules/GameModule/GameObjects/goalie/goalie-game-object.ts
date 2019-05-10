@@ -13,7 +13,7 @@ import * as _ from "lodash";
 import {MaterialType, P2WorldManager} from "../../p2-world-manager";
 import {GoalieGraphicObject} from "./goalie-graphic-object";
 import {PockeyGameObject} from "../pockey-game-object";
-import {BallType} from "../../../../../common/pockey-game-settings";
+import {BallType} from "../../../../../common/pockey-value-objects";
 // import {PockeyGameElementVO} from "../../../../../common/pockey-value-objects";
 // import {TweenMax, Linear} from "gsap";
 // import {Settings} from "../../../../qFramework/Settings";

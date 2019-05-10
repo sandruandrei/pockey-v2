@@ -10,16 +10,25 @@
  */
 
 
-import {BallType} from "./pockey-game-settings";
-import {PockeyStates} from "../client/Modules/StateMachine/pockey-state-machine";
+import {PockeyStates} from "../client/Modules/GameModule/StateMachine/pockey-state-machine";
+import {PockeyPlayerData} from "./pockey-player-data";
 
-// export enum PockeyObjectType {
-//     Ball,
-//     Stick,
-//     Goalie,
-//     StickGraphicLine,
-//     StickGraphicCircle
-// }
+export enum RoundCompleteType {
+    matchComplete,
+    roundComplete,
+    playerDisconnected,
+    rematch,
+    opponentFound
+}
+
+export interface RoundVO {
+    type?: RoundCompleteType,
+    roundNumber?: number,
+    leftPlayerData?: PockeyPlayerData,
+    rightPlayerData?: PockeyPlayerData,
+    // playerDisconnected,
+    // rematch
+}
 
 export interface PockeySoundVO {
     soundAt: number,
@@ -66,4 +75,16 @@ export interface PockeySnapshot {
 
 export interface RoundSetup {
     roundNumber: number;
+}
+
+export enum BallType {
+    Left = 'LeftBall',
+    Right = 'RightBall',
+    White = "WhiteBall",
+    Puck = "Puck"
+}
+
+export enum WinStatus {
+    WIN,
+    LOST
 }

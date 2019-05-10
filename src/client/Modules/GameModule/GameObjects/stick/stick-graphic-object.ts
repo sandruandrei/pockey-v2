@@ -10,7 +10,7 @@
  */
 import {GraphicObject} from "../../../../qFramework/AbstractModules/GameModule/graphic-object";
 import {InventoryVO, PockeySettings} from "../../../../pockey-settings";
-import {PockeyPlayerManager} from "../../pockey-player-manager";
+import {PockeyPlayerManager} from "../../../../pockey-player-manager";
 import * as _ from "lodash";
 import {PockeySignalTypes} from "../../../SignalsModule/pockey-signal-types";
 import {SignalsManager} from "../../../../qFramework/Signals/signals-manager";

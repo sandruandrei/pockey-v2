@@ -19,6 +19,7 @@ export class Timer {
 
     public start(i: number) {
         this.currentTime = i;
+        this.onUpdateCallback();
         //callback = callback || function(){};
         this.timer = setInterval(() => {
             this.currentTime--;

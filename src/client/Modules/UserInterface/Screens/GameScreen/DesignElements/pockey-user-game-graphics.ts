@@ -1,8 +1,8 @@
 import {PockeyUiVersusGraphics} from "./pockey-ui-versus-graphics";
-import {BallType} from "../../../../../../common/pockey-game-settings";
 import {PockeyUiMatchCircle} from "./pockey-ui-match-circle";
 import {InventoryVO, PockeySettings} from "../../../../../pockey-settings";
 import * as _ from "lodash";
+import {BallType} from "../../../../../../common/pockey-value-objects";
 
 
 export class PockeyUserGameGraphics {

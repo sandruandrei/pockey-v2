@@ -8,7 +8,7 @@
  *
  *  Created by Sandru Andrei on 4/8/2019
  */
-import {BallType} from "./pockey-game-settings";
+import {BallType} from "./pockey-value-objects";
 
 export interface PockeyPlayerData {
     nickname?: string,

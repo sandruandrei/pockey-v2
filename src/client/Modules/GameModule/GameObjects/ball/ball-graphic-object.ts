@@ -23,6 +23,9 @@ export class BallGraphicObject extends GraphicObject {
         this.lastPosition = new BABYLON.Vector3(0, 0, 0);
         this.addTexture();
         this.createBallShadow();
+
+        this.scale.x = 0.9;
+        this.scale.y = 0.9;
     }
 
     protected addTexture(): void {
@@ -109,8 +112,8 @@ export class BallGraphicObject extends GraphicObject {
             this.sphere.setEnabled(true);
         }
 
-        this.ballShadow.scale.x = 0.9;
-        this.ballShadow.scale.y = 0.9;
+        this.scale.x = 0.9;
+        this.scale.y = 0.9;
     }
 
     private createBallShadow() {
@@ -118,8 +121,8 @@ export class BallGraphicObject extends GraphicObject {
         this.ballShadow.name = this.name + "_ballShadow";
         this.ballShadow.beginFill(0x000000, 0.68);
         this.ballShadow.drawCircle(this.radius / 3, this.radius / 3, this.radius);
-        this.ballShadow.scale.x = 0.9;
-        this.ballShadow.scale.y = 0.9;
+        // this.ballShadow.scale.x = 0.9;
+        // this.ballShadow.scale.y = 0.9;
         this.addChild(this.ballShadow);
     }
 

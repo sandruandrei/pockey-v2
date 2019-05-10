@@ -12,14 +12,14 @@ import {GameObject} from "../../../../qFramework/AbstractModules/GameModule/game
 import {Linear, TimelineMax, TweenMax} from "gsap";
 import {Vector2} from "../../../../qFramework/Utils/Vector2";
 import {StickGraphicObject} from "./stick-graphic-object";
-import {PockeyStateMachine, PockeyStates} from "../../../StateMachine/pockey-state-machine";
+import {PockeyStateMachine, PockeyStates} from "../../StateMachine/pockey-state-machine";
 import {SignalsManager} from "../../../../qFramework/Signals/signals-manager";
 import {PockeySignalTypes} from "../../../SignalsModule/pockey-signal-types";
 import {SignalsType} from "../../../../qFramework/Signals/signal-types";
 import {PockeySoundURLS} from "../../../SoundModule/pockey-sound-names";
 import {MouseHandler} from "../../../../qFramework/Utils/mouse-handler";
 import {Settings} from "../../../../qFramework/Settings";
-import {PockeyPlayerManager} from "../../pockey-player-manager";
+import {PockeyPlayerManager} from "../../../../pockey-player-manager";
 
 //.TimelineMax;
 

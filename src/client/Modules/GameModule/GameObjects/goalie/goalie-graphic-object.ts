@@ -8,9 +8,9 @@
  *
  *  Created by Sandru Andrei on 11/21/2018
  */
-import {BallType} from "../../../../../common/pockey-game-settings";
 import {Settings} from "../../../../qFramework/Settings";
 import {GraphicObject} from "../../../../qFramework/AbstractModules/GameModule/graphic-object";
+import {BallType} from "../../../../../common/pockey-value-objects";
 
 export class GoalieGraphicObject extends GraphicObject {
 

@@ -8,7 +8,7 @@
  *
  *  Created by Sandru Andrei on 4/8/2019
  */
-import {PockeyPlayerData} from "../../../common/pockey-player-data";
+import {PockeyPlayerData} from "../common/pockey-player-data";
 import {PockeyClientPlayer} from "./pockey-client-player";
 
 export class PockeyPlayerManager {
