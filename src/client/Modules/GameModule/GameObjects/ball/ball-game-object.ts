@@ -280,6 +280,8 @@ export class BallGameObject extends PockeyGameObject {
                             soundName: PockeySoundURLS.BALL_IN_POCKET
                         }]);
 
+
+
                         this.gameObjectData.canBeRemoved = true;
                         this.p2Body.velocity = [0, 0];
                         P2WorldManager.Instance().world.removeBody(this.p2Body);

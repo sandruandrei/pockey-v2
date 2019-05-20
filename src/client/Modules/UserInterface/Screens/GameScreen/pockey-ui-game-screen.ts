@@ -1,7 +1,6 @@
 import {PockeyUserGameGraphics} from "./DesignElements/pockey-user-game-graphics";
 import {SignalsManager} from "../../../../qFramework/Signals/signals-manager";
 import {PockeySignalTypes} from "../../../SignalsModule/pockey-signal-types";
-import {PockeySettings} from "../../../../pockey-settings";
 import * as _ from "lodash";
 import {Settings} from "../../../../qFramework/Settings";
 import {TweenMax} from 'gsap';
@@ -9,6 +8,7 @@ import {Player} from "../../../../../common/player";
 import {PockeyPlayerManager} from "../../../../pockey-player-manager";
 import {PockeyPlayerData} from "../../../../../common/pockey-player-data";
 import {BallType} from "../../../../../common/pockey-value-objects";
+import {Utilities} from "../../../../qFramework/Utils/utilies";
 
 export interface PlayerGraphicsInterface {
     data?: PockeyPlayerData,
@@ -162,7 +162,7 @@ export class PockeyUiGameScreen {
 
         this.currentText = text;
 
-        text = text.replace("{opponent}", PockeySettings.OPPONENT_NICKNAME);
+        text = text.replace("{opponent}", PockeyPlayerManager.Instance().opponent.nickname);
         // let multistyleUsed:boolean = false;
 
         // let warningClassStyle:
@@ -205,7 +205,7 @@ export class PockeyUiGameScreen {
                     if (counter == 1) {
                         paragraph.innerText = " " + divText + " ";
                         paragraph.classList.add('opponent');
-                        paragraph.style.color = '#' + ('00000' + (PockeySettings.OPPONENT_COLOR | 0).toString(16)).substr(-6);
+                        paragraph.style.color = Utilities.ColorToHTMLString(+PockeyPlayerManager.Instance().opponent.color);//'#' + ('00000' + (PockeyPlayerManager.Instance().opponent.color | 0).toString(16)).substr(-6);
                     } else {
                         paragraph.classList.add('normalSpan');
                     }

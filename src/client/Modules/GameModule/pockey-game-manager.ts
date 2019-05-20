@@ -18,11 +18,13 @@ import {PockeyPlayerManager} from "../../pockey-player-manager";
 import {PoolTableManager} from "./GameObjects/pool-table-manager";
 import {BallType, RoundVO} from "../../../common/pockey-value-objects";
 import {TweenMax} from "gsap";
+import {PockeyStateTexts} from "./StateMachine/pockey-state-texts";
 
 export class PockeyGameManager {
 
     protected pooltableManager: PoolTableManager;
     protected currentRound: number = 0;
+    protected faultRegistered: boolean = false;
 
     constructor(pooltableManager: PoolTableManager) {
         this.registerSignals();
@@ -82,10 +84,37 @@ export class PockeyGameManager {
 
     protected onBallInPocket(ballType: BallType[]): void {
         PockeyPlayerManager.Instance().player.onBallInPocket(ballType[0]);
+
+        if (ballType[0] == PockeyPlayerManager.Instance().player.data.type) {
+                this.faultRegistered = true;
+                this.updateUIText(PockeyStateTexts.onOwnBallInPocket);
+        } else if (ballType[0] == BallType.White) {
+                this.faultRegistered = true;
+                this.updateUIText(PockeyStateTexts.whiteBallFault);
+        } else {
+            if (!this.faultRegistered) {
+                this.updateUIText(PockeyStateTexts.opponentBallInPocket);
+            }
+        }
+    }
+
+    protected updateUIText(text: PockeyStateTexts) {
+        if (PockeyStateMachine.Instance().fsm.currentState != PockeyStates.onWatch) {
+            SignalsManager.DispatchSignal(PockeySignalTypes.UPDATE_UI_TEXT, [text]);
+        }
     }
 
     protected onPuckInPocket(ballType: BallType[]): void {
         PockeyPlayerManager.Instance().player.onPuckInPocket(ballType[0]);
+
+        if (ballType[0] == PockeyPlayerManager.Instance().player.data.type) {
+            this.faultRegistered = true;
+            this.updateUIText(PockeyStateTexts.puckOwnGoal);
+        } else{
+            if (!this.faultRegistered) {
+                this.updateUIText(PockeyStateTexts.onPuckGoal);
+            }
+        }
     }
 
     protected onEndTurn(): void {
@@ -118,9 +147,12 @@ export class PockeyGameManager {
         } else if (state[0] == PockeyStates.onWatch) {
             // PockeyPlayerManager.Instance().player.pockeyGameWorld.stopServerUpdate();
             PockeyPlayerManager.Instance().currentPlayerSocketID = PockeyPlayerManager.Instance().opponent.socketID;
+            this.updateUIText("");
             PockeyStateMachine.Instance().changeState(PockeyStates.onWatch);
             this.pooltableManager.addShadows();
         }
+
+        this.faultRegistered = false;
     }
 
     protected startOnReposition(): void {

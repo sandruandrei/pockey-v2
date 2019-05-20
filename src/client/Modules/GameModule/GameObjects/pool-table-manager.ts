@@ -525,6 +525,8 @@ export class PoolTableManager {
         if (this.whiteBallDashedMesh)
             this.whiteBallDashedMesh.setEnabled(false);//();
 
+        this.onStopAnimatePuckGoal();
+
         this.graphicsHidden = true;
     }
 
@@ -711,6 +713,12 @@ export class PoolTableManager {
                 ball.addBody();
             }
         });
+    }
+
+    protected updateUIText(text: PockeyStateTexts) {
+        if (PockeyStateMachine.Instance().fsm.currentState != PockeyStates.onWatch) {
+            SignalsManager.DispatchSignal(PockeySignalTypes.UPDATE_UI_TEXT, [text]);
+        }
     }
 
     public update(delta: number): void {
@@ -1000,18 +1008,23 @@ export class PoolTableManager {
             //if the follower hits a ball, then show collision directions graphics
             if (!_.isNull(result.shape.radius) && !_.isUndefined(result.shape.radius)) {
                 let isOwnBall: boolean = this.checkIfOwnShadow(result.body);
+                let isPuck: boolean = this.pooltable.puck.p2Shadow == result.body;
 
                 if (isOwnBall) {
                     hexDefaultColor = Utilities.BabylonHexToRGB(0xca384d);
                     this.graphColor = hexDefaultColor;
 
-                    SignalsManager.DispatchSignal(PockeySignalTypes.UPDATE_UI_TEXT, [PockeyStateTexts.ownBallAiming]);
+                    this.updateUIText(PockeyStateTexts.ownBallAiming);
+                    this.onStopAnimatePuckGoal();
+                } else if (isPuck) {
+                    this.onAnimatePuckGoal();
                 } else {
                     if (this.isFirstShoot) {
-                        SignalsManager.DispatchSignal(PockeySignalTypes.UPDATE_UI_TEXT, [PockeyStateTexts.beginGame]);
+                        this.updateUIText(PockeyStateTexts.beginGame);
                     } else {
-                        SignalsManager.DispatchSignal(PockeySignalTypes.UPDATE_UI_TEXT, [PockeyStateTexts.yourTurnToShoot]);
+                        this.updateUIText(PockeyStateTexts.yourTurnToShoot);
                     }
+                    this.onStopAnimatePuckGoal();
                 }
 
                 // this.graphColor = defaultColor;
@@ -1025,16 +1038,15 @@ export class PoolTableManager {
 
                 // this.whiteBallDirectionMesh.diffuseColor = hexDefaultColor;
 
-                let isPuck: boolean = this.checkIfPuck(result.body);
-                if (isPuck) {
-                    this.onAnimatePuckGoal();
-                    // console.log("e puck!!!!");
-                    SignalsManager.DispatchSignal(PockeySignalTypes.UPDATE_UI_TEXT, [PockeyStateTexts.puckAiming]);
-                } else {
-                    this.onStopAnimatePuckGoal();
-                    // console.log("nu e puck!!!!");
+                /* let isPuck: boolean = this.checkIfPuck(result.body);
+                 if (isPuck) {
+                     this.onAnimatePuckGoal();
+                     // console.log("e puck!!!!");
+                 } else {
+                     this.onStopAnimatePuckGoal();
+                     // console.log("nu e puck!!!!");
 
-                }
+                 }*/
                 /*else {
                     if (this.isFirstShoot) {
                         SignalsManager.DispatchSignal(PockeySignalTypes.UPDATE_UI_TEXT, [PockeyStateTexts.beginGame]);
@@ -1095,7 +1107,7 @@ export class PoolTableManager {
 
                    let newTangent:Vector2 =  */
                 let whiteBallArrowAngleCorrection: number = 1;//(tangentVector.x * tangentVector.y < 0) ? -1 : 1;
-                if (arrowScaleFactor > 0.03 && !isOwnBall) {
+                if (!isOwnBall) {
                     //white ball direction graphics
 
                     // let whiteBallArrowAngleCorrection: number = (tangentVector.x * tangentVector.y < 0) ? -1 : 1;
@@ -1211,10 +1223,10 @@ export class PoolTableManager {
                     this.whiteBallReflectionArrowMesh.rotation.z = -Math.atan2(endPoint.y - startPoint.y, endPoint.x - startPoint.x) - 135 * Math.PI / 180;// + Math.PI;
                     this.whiteBallReflectionArrowMesh.setEnabled(true);
 
-                }
+               /* }
                 //other ball direction graphics
 
-                if ((1 - arrowScaleFactor) > 0.01 && !isOwnBall) {
+                if ((1 - arrowScaleFactor) > 0.01 && !isOwnBall) {*/
                     startPoint = new Vector2(this.hitPoint[0] - (PockeySettings.BALL_RADIUS * cotangentVector.x), this.hitPoint[1] - (PockeySettings.BALL_RADIUS * cotangentVector.y));
 
 
@@ -1561,31 +1573,22 @@ export class PoolTableManager {
 
         }
 
-
-    }
-
-    // @ts-ignore
-    private checkIfPuck(body: p2.Body): boolean {
-        let isPuck: boolean = false;
-        // _.forEach(this.poolTable.balls, (ball: AbstractBall) => {
-        //
-        //     if (ball.ballType == BallType.Puck && ball.p2BodyShadow.id == body.id) {
-        //         // console.log("ball.p2Body.id, body.id " + ball.p2Body.id, body.id);
-        //         // && ball.p2Body.id == body.id
-        //         isPuck = true;
-        //     }
-        //
-        // });
-        return isPuck;
     }
 
     protected onAnimatePuckGoal(): void {
-        // if (this.poolTable.leftGoal.type == GameManager.Instance().currentPlayer.type) {
-        //     this.poolTable.rightGoal.animate();
-        // }
-        // else {
-        //     this.poolTable.leftGoal.animate();
-        // }
+        let currentPlayerType:BallType = PockeyPlayerManager.Instance().player.data.type;
+        if(PockeyStateMachine.Instance().fsm.currentState == PockeyStates.onWatch)
+        {
+            currentPlayerType = PockeyPlayerManager.Instance().opponent.type;
+        }
+
+        if (this.pooltable.leftGoal.type == currentPlayerType) {
+            this.pooltable.rightGoal.animate();
+        } else {
+            this.pooltable.leftGoal.animate();
+        }
+
+        this.updateUIText(PockeyStateTexts.puckAiming);
     }
 
     private checkIfOwnShadow(body: p2.Body): boolean {
@@ -1620,6 +1623,7 @@ export class PoolTableManager {
     }
 
     public startOnRepositionWhiteBall(): void {
+        this.updateUIText(PockeyStateTexts.opponentFault);
         this.pooltable.stick.gameObjectData.state = PockeyStates.onRepositionWhiteBall;
 
         // this.goalieMover.startMoving();

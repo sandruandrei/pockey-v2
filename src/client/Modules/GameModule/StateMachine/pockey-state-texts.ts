@@ -38,7 +38,7 @@ export class PockeyStateTexts {
     public static whiteBallFault: string = "YOU FOULED! #opponent#{opponent}#opponent# GETS BALL-IN-HAND";
 
     // State: when player scores his own ball in
-    public static onOwnBallInPocket: string = "YOU SCORED AN OWN BALL! #opponent#{opponent}’s#opponent# TURN!";
+    public static onOwnBallInPocket: string = "YOU SCORED AN OWN BALL! #opponent#{opponent}#opponent# GETS NEXT TURN!";
 
     // State: when you score puck in your goal
     public static puckOwnGoal: string = "PUCK WENT INTO YOUR OWN GOAL! #opponent#{opponent}#opponent# GETS BALL-IN-HAND";
@@ -66,6 +66,7 @@ export class PockeyStateTexts {
     // POWERUP! THIS POCKET WILL BE BLOCKED FOR YOUR OPPONENTS NEXT TURN
     //
     // State: when you score one of your balls in
-    public static opponentBallInPocket: string = "#opponent#{opponent}#opponent# POCKETED A BALL AND CAN SHOOT AGAIN!";
+    public static opponentBallInPocket: string = "YOU SCORED! -1 HEALTH TO #opponent#{opponent}#opponent#";
+    public static opponentBallInPocketOnWatch: string = "#opponent#{opponent}#opponent# POCKETED A BALL AND CAN SHOOT AGAIN!";
     public static opponentsTurn: string = "#opponent#{opponent}'s#opponent# turn";
 }
