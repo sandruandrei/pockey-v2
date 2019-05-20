@@ -143,10 +143,9 @@ export class PoolTableManager {
                     if (ball != this.pooltable.whiteBall && this.contactEnabled) {
                         let ballPosition: Vector2 = new Vector2(ball.p2Body.position[0], ball.p2Body.position[1]);
 
-                        if (ballPosition.distanceTo(whiteBallPosition) <= (ball.radius + this.pooltable.whiteBall.radius )) {
+                        if (ballPosition.distanceTo(whiteBallPosition) <= (ball.radius + this.pooltable.whiteBall.radius)) {
 
-                            if(this.whiteBallDirectionOnCollision != undefined)
-                            {
+                            if (this.whiteBallDirectionOnCollision != undefined) {
                                 this.pooltable.whiteBall.p2Body.velocity = [0, 0];
                                 this.pooltable.whiteBall.setPosition(this.whiteBallPositionOnCollision.x, this.whiteBallPositionOnCollision.y);
 
@@ -161,8 +160,7 @@ export class PoolTableManager {
                                 this.pooltable.whiteBall.p2Body.velocity = [whiteBallNewVelocity.x, whiteBallNewVelocity.y];
                             }
 
-                            if(this.otherBallDirectionOnCollision != undefined)
-                            {
+                            if (this.otherBallDirectionOnCollision != undefined) {
                                 let opposite: number = this.otherBallDirectionOnCollision.y - ball.gameObjectData.yPos;
                                 let adjacent: number = this.otherBallDirectionOnCollision.x - ball.gameObjectData.xPos;
                                 let raycastAngle: number = Math.atan2(opposite, adjacent);
@@ -509,6 +507,9 @@ export class PoolTableManager {
     }
 
     private hideBallRayGraphics(): void {
+        if (this.graphicsHidden)
+            return;
+
         this.ballPositionCircleMesh.setEnabled(false);
         this.ballPositionCircleOnRaycastMesh.setEnabled(false);
         this.raycastFollowerMesh.setEnabled(false);
@@ -531,6 +532,7 @@ export class PoolTableManager {
         // console.log("%c Pool T Manager: intra la onShoot ", "background: red; color: white; font-weight:bold; ");
 
         PockeyStateMachine.Instance().changeState(PockeyStates.onShoot);
+        this.pooltable.stick.gameObjectData.state = PockeyStates.onShoot;
 
         this.onStopAnimatePuckGoal();
 
@@ -538,12 +540,9 @@ export class PoolTableManager {
         // this.ballWasShot = true;
         // this.ticker.add(this.update, this);
         // let power = this.poolTable.poolStick.power;
-        if(this.whiteBallDirectionOnCollision == undefined || this.otherBallDirectionOnCollision == undefined)
-        {
+        if (this.whiteBallDirectionOnCollision == undefined || this.otherBallDirectionOnCollision == undefined) {
             this.addBodies();
-        }
-        else
-        {
+        } else {
             this.removeBodies();
             P2WorldManager.Instance().world.addBody(this.pooltable.whiteBall.p2Body);
         }
@@ -551,7 +550,6 @@ export class PoolTableManager {
         let velo: Vector2 = new Vector2(this.pooltable.stick.power * Math.cos(this.pooltable.stick.gameObjectData.rotation), this.pooltable.stick.power * Math.sin(this.pooltable.stick.gameObjectData.rotation));
 
         // P2WorldManager.Instance().world.removeBody(this.pooltable.whiteBall.p2Shadow);
-
 
 
         this.pooltable.whiteBall.p2Body.wakeUp();
@@ -727,21 +725,34 @@ export class PoolTableManager {
             this.onRepositionWhiteBall();
         } else if (PockeyStateMachine.Instance().fsm.currentState == PockeyStates.onWatch) {
 
-            if (this.pooltable.whiteBall.gameObjectData.isOnReposition == true) {
+            /*if (this.pooltable.whiteBall.gameObjectData.isOnReposition == true) {
 //                 console.log("intra la watch -> reposition");
-
+                if (this.ballPositionCircleMesh && !this.ballPositionCircleMesh.isEnabled) {
+                    this.hideBallRayGraphics();
+                    this.ballPositionCircleMesh.setEnabled(true);
+                    this.graphicsHidden = false;
+                }
+                this.ballPositionCircleMesh.position.x = this.pooltable.whiteBall.gameObjectData.xPos;
+                this.ballPositionCircleMesh.position.y = -this.pooltable.whiteBall.gameObjectData.yPos - PockeySettings.BABYLON_Y_OFFSET;
+            } else if (this.pooltable.stick.gameObjectData.state == PockeyStates.onShoot) {
                 this.hideBallRayGraphics();
-                if (this.ballPositionCircleMesh) {
+            }
+*/
+            if (this.pooltable.stick.gameObjectData.state == PockeyStates.onRearrangeStick) {
+//                 console.log("intra la watch -> rearrange");
+                this.pooltable.whiteBall.isOnRearrange = true;
+                this.ballPositionCircleMesh.setEnabled(false);
+                this.onRearrangeStick();
+            } else if (this.pooltable.stick.gameObjectData.state == PockeyStates.onRepositionWhiteBall) {
+                this.pooltable.whiteBall.isOnReposition = true;
+
+                if (this.ballPositionCircleMesh && !this.ballPositionCircleMesh._isEnabled) {
                     this.ballPositionCircleMesh.setEnabled(true);
                 }
                 this.ballPositionCircleMesh.position.x = this.pooltable.whiteBall.gameObjectData.xPos;
                 this.ballPositionCircleMesh.position.y = -this.pooltable.whiteBall.gameObjectData.yPos - PockeySettings.BABYLON_Y_OFFSET;
-            } else if (this.pooltable.stick.gameObjectData.state == PockeyStates.onShoot && !this.graphicsHidden) {
+            } else if (this.pooltable.stick.gameObjectData.state == PockeyStates.onShoot) {
                 this.hideBallRayGraphics();
-            } else {
-//                 console.log("intra la watch -> rearrange");
-
-                this.onRearrangeStick();
             }
 
         } else if (PockeyStateMachine.Instance().fsm.currentState == PockeyStates.onShoot) {
@@ -806,7 +817,6 @@ export class PoolTableManager {
 
     protected onRearrangeStick(): void {
         this.graphicsHidden = false;
-
         // if (!this.goaliesHolder.moving)
         //     this.goaliesHolder.moving = true;
 
@@ -1604,11 +1614,14 @@ export class PoolTableManager {
                  // ball.p2Body.wakeUp();
              }
          });*/
+        this.pooltable.stick.gameObjectData.state = PockeyStates.onRearrangeStick;
         this.goalieMover.startMoving();
         this.reactivateStick();
     }
 
     public startOnRepositionWhiteBall(): void {
+        this.pooltable.stick.gameObjectData.state = PockeyStates.onRepositionWhiteBall;
+
         // this.goalieMover.startMoving();
         // this.reactivateStick();
         // if (!this.pooltable.whiteBall.isOnReposition) {

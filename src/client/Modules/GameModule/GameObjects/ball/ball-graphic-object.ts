@@ -105,8 +105,7 @@ export class BallGraphicObject extends GraphicObject {
         // console.log("last pos on push: " + this.lastPositions.length);
     }
 
-    public reset():void
-    {
+    public reset(): void {
         if (this.sphere) {
             this.sphere.visibility = 1;
             this.sphere.setEnabled(true);
@@ -137,5 +136,24 @@ export class BallGraphicObject extends GraphicObject {
         if (this.sphere) {
             this.sphere.setEnabled(true);
         }
+    }
+
+
+    hide(): void {
+        if (this.sphere) {
+            this.sphere.setEnabled(false);
+        }
+
+        this.ballShadow.visible = false;
+        this.visible = false;
+    }
+
+    show(): void {
+        if (this.sphere) {
+            this.sphere.setEnabled(true);
+        }
+
+        this.ballShadow.visible = true;
+        this.visible = true;
     }
 }

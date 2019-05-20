@@ -94,6 +94,7 @@ export class PoolTableGraphics extends PIXI.Container {
         this.poolTableFeltLines.name = "poolTableFeltLines";
         this.poolTableFeltLines.anchor.x = 0.5;
         this.poolTableFeltLines.anchor.y = 0.5;
+        // this.poolTableFeltLines.alpha = 0.2;
         this.addChild(this.poolTableFeltLines);
         ////end poolTableFeltLines
 

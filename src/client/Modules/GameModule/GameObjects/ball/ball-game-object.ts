@@ -102,11 +102,12 @@ export class BallGameObject extends PockeyGameObject {
             // this.sphere.setEnabled(false);
             // this.ballShadow.scale.x = 0;
             // this.ballShadow.scale.y = 0;
-            this.graphicObject.scale.x = 0;
-            this.graphicObject.scale.y = 0;
+            this.isOnRearrange = false;
+            this.graphicObject.hide();
+            // this.graphicObject.scale.x = 0;
+            // this.graphicObject.scale.y = 0;
         }
 
-        this.gameObjectData.isOnReposition = value;
     }
 
     get isOnReposition(): boolean {
@@ -118,8 +119,9 @@ export class BallGameObject extends PockeyGameObject {
         this._isOnRearrange = value;
         if (value == true) {
             // console.log("intra la enabled false!");
+            this.isOnReposition = false;
             this.reset();
-            this.graphicObject.alpha = 1;
+            this.graphicObject.show();
         }
     }
 
@@ -822,9 +824,12 @@ export class BallGameObject extends PockeyGameObject {
             P2WorldManager.Instance().world.removeBody(this.p2Shadow);
         }
 
-        if (this.ballType == BallType.White && this.snapshotsBundle[0].isOnReposition == true) {
-            this.gameObjectData.isOnReposition = true;
-        }
+        // if (this.ballType == BallType.White && this.snapshotsBundle[0].isOnReposition == true) {
+        //     this.gameObjectData.isOnReposition = true;
+        //     this.gameObjectData.alpha = 1;
+        //     this.graphicObject.hide();
+        // }
+
         // super.playSnapshot();
         this.snapshotsBundle.shift();
     }

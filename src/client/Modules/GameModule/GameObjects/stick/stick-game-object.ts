@@ -12,7 +12,7 @@ import {GameObject} from "../../../../qFramework/AbstractModules/GameModule/game
 import {Linear, TimelineMax, TweenMax} from "gsap";
 import {Vector2} from "../../../../qFramework/Utils/Vector2";
 import {StickGraphicObject} from "./stick-graphic-object";
-import {PockeyStateMachine, PockeyStates} from "../../StateMachine/pockey-state-machine";
+import {PockeyStates} from "../../StateMachine/pockey-state-machine";
 import {SignalsManager} from "../../../../qFramework/Signals/signals-manager";
 import {PockeySignalTypes} from "../../../SignalsModule/pockey-signal-types";
 import {SignalsType} from "../../../../qFramework/Signals/signal-types";
@@ -36,6 +36,7 @@ export class StickGameObject extends GameObject {
     protected clickPoint: Vector2;
     protected firstPointOfTangent: Vector2;
     protected secondPointOfTangent: Vector2;
+    protected onShootTween: TweenMax;
 
     public build(): StickGameObject {
         this.createElements();
@@ -103,24 +104,25 @@ export class StickGameObject extends GameObject {
         // this.power = 0;
         // console.log("stick power: " + this.power);
 
-        if (PockeyStateMachine.Instance().fsm.currentState != PockeyStates.onRearrangeStick) {
+        /*if (PockeyStateMachine.Instance().fsm.currentState != PockeyStates.onRearrangeStick) {
             return;
-        }
+        }*/
 
-        this.gameObjectData.state = PockeyStates.onShoot;
         this.gameObjectData.pivot = this.graphicObject.pivot.x;
 
         SignalsManager.DispatchSignal(PockeySignalTypes.SHOOT_BALL);
         SignalsManager.DispatchSignal(SignalsType.PLAY_SOUND, [{soundName: PockeySoundURLS.SHOOT_BALL}]);
-        TweenMax.to(this.graphicObject, 0.2, {
+        this.onShootTween = TweenMax.to(this.graphicObject, 0.2, {
             alpha: 0,
             onUpdate: () => {
+                console.log("salam update");
                 this.gameObjectData.alpha = this.graphicObject.alpha;
             },
             onComplete: () => {
+                console.log("salam se face visible false la shoot");
                 this.graphicObject.visible = false;
                 this.gameObjectData.alpha = this.graphicObject.alpha;
-                this.gameObjectData.state = PockeyStates.onEndTurn;
+                // this.gameObjectData.state = PockeyStates.onEndTurn;
             }
         });
 
@@ -131,6 +133,11 @@ export class StickGameObject extends GameObject {
     public activate(position: PIXI.Point | PIXI.PointLike): void {
         // console.log("stick la activate");
         this.setPosition(position.x, position.y);
+        if (this.onShootTween)
+            this.onShootTween.kill();
+
+        if (this.animationTween)
+            this.animationTween.kill();
 
         this.isActive = true;
         this.rotationEnabled = true;
@@ -139,7 +146,9 @@ export class StickGameObject extends GameObject {
         this.graphicObject.rotation = this.gameObjectData.rotation;
         this.gameObjectData.alpha = 1;
 
-        this.gameObjectData.state = PockeyStates.onRearrangeStick;
+        console.log("salam s-a activat");
+
+        // this.gameObjectData.state = PockeyStates.onRearrangeStick;
 
         // console.log("la activate -> stick rotation enabled: " + this.rotationEnabled);
     }
@@ -316,12 +325,15 @@ export class StickGameObject extends GameObject {
             this.animationTween.kill();
 
         let isOnShoot: boolean = false;
+        if (this.snapshotsBundle[0].state)
+            this.gameObjectData.state = this.snapshotsBundle[0].state;
+
         if (this.snapshotsBundle[0].state) {
-            if (this.snapshotsBundle[0].state == PockeyStates.onShoot){
-                this.gameObjectData.state = PockeyStates.onShoot;
-                isOnShoot = true;}
-            else if (this.snapshotsBundle[0].state == PockeyStates.onRearrangeStick)
-                this.graphicObject.visible = true;
+            if (this.snapshotsBundle[0].state == PockeyStates.onShoot) {
+                isOnShoot = true;
+            }
+
+            this.graphicObject.visible = true;
         }
         // console.log("stick rotation: " + this.snapshotsBundle[0].rotation);
         // this.snapshotsBundle[0].rotation
@@ -331,9 +343,15 @@ export class StickGameObject extends GameObject {
             pivot: this.snapshotsBundle[0].pivot,
             onComplete: () => {
 
-                if (isOnShoot) {
+                if (isOnShoot && this.graphicObject.visible) {
                     TweenMax.delayedCall(0.15, () => {
-                        this.graphicObject.visible = false;
+                        console.log("salam cacat se face visible false la update");
+
+                        if (!this.isActive)
+                            this.graphicObject.visible = false;
+                        else
+                            this.graphicObject.visible = true;
+
                     });
                 }
             },

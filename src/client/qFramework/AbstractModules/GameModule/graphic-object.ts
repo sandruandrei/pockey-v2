@@ -20,4 +20,14 @@ export class GraphicObject extends PIXI.Container {
         this.x = x;
         this.y = y;
     }
+
+    public hide():void
+    {
+
+    }
+
+    public show():void
+    {
+
+    }
 }
