@@ -77,7 +77,16 @@ export class PoolTableManager {
 
 
     protected repositionStarted: boolean = false;
+    protected whiteBallVelocityNeedsUpdate: boolean = false;
 
+    public whiteBallPositionOnCollision: Vector2 = new Vector2();
+    public whiteBallDirectionOnCollision: Vector2 = undefined;
+    public whiteBallSpeedOnCollision: number = 0;
+    public otherBallDirectionOnCollision: Vector2 = undefined;
+    public otherBallSpeedOnCollision: number = 0;
+    public otherBallOnCollision: BallGameObject;
+
+    // private whiteBallNewVelocity: Vector2;
 
     constructor(protected pooltable: PoolTableGraphics) {
 
@@ -95,6 +104,11 @@ export class PoolTableManager {
     }
 
     private updateP2World(): void {
+
+        P2WorldManager.Instance().world.emitImpactEvent = true;
+        // this.pooltable.whiteBall.p2Body.on("postStep", () => {
+        //     console.log("alba a avut impact");
+        // });
         // P2WorldManager.Instance().world.on("beginContact", () => {
         //         //
         //         // });
@@ -118,48 +132,252 @@ export class PoolTableManager {
         // });
         this.addShadows();
 
-        P2WorldManager.Instance().world.on("beginContact", (evt: any) => {
+        P2WorldManager.Instance().world.on("postStep", () => {
             if (this.contactEnabled) {
+                let isOwnBall: boolean = false;
+
+                let whiteBallSpeed: number = this.pooltable.whiteBall.speed() * 0.6;
+                let whiteBallPosition: Vector2 = new Vector2(this.pooltable.whiteBall.p2Body.position[0], this.pooltable.whiteBall.p2Body.position[1]);
+
+                _.forEach(this.pooltable.balls, (ball: BallGameObject) => {
+                    if (ball != this.pooltable.whiteBall && this.contactEnabled) {
+                        let ballPosition: Vector2 = new Vector2(ball.p2Body.position[0], ball.p2Body.position[1]);
+
+                        if (ballPosition.distanceTo(whiteBallPosition) <= (ball.radius + this.pooltable.whiteBall.radius )) {
+
+                            if(this.whiteBallDirectionOnCollision != undefined)
+                            {
+                                this.pooltable.whiteBall.p2Body.velocity = [0, 0];
+                                this.pooltable.whiteBall.setPosition(this.whiteBallPositionOnCollision.x, this.whiteBallPositionOnCollision.y);
+
+                                let opposite: number = this.whiteBallDirectionOnCollision.y - this.whiteBallPositionOnCollision.y;
+                                let adjacent: number = this.whiteBallDirectionOnCollision.x - this.whiteBallPositionOnCollision.x;
+                                let raycastAngle: number = Math.atan2(opposite, adjacent);
+
+                                let whiteBallNewVelocity: Vector2 = new Vector2(Math.cos(raycastAngle), Math.sin(raycastAngle)).normalise().multiply(whiteBallSpeed);
+
+                                this.addBodies();
+
+                                this.pooltable.whiteBall.p2Body.velocity = [whiteBallNewVelocity.x, whiteBallNewVelocity.y];
+                            }
+
+                            if(this.otherBallDirectionOnCollision != undefined)
+                            {
+                                let opposite: number = this.otherBallDirectionOnCollision.y - ball.gameObjectData.yPos;
+                                let adjacent: number = this.otherBallDirectionOnCollision.x - ball.gameObjectData.xPos;
+                                let raycastAngle: number = Math.atan2(opposite, adjacent);
+
+                                let ballNewVelocity: Vector2 = new Vector2(Math.cos(raycastAngle), Math.sin(raycastAngle)).normalise().multiply(whiteBallSpeed);
+
+                                this.addBodies();
+
+                                ball.p2Body.velocity = [ballNewVelocity.x, ballNewVelocity.y];
+                            }
+
+
+                            this.contactEnabled = false;
+                            return true;
+                        }
+                    }
+                });
+
+                if (isOwnBall) {
+                    SignalsManager.DispatchSignal(PockeySignalTypes.OWN_BALL_TOUCHED_FIRST);
+
+                    // SignalsManager.DispatchSignal(PockeySignalTypes.FIRST_BALL_FAULT);
+                    // SignalsManager.DispatchSignal(PockeySignalTypes.UPDATE_UI_TEXT, [PockeyStateTexts.whiteBallFault]);
+                }
+            }
+        });
+        /*P2WorldManager.Instance().world.on("postStep", () => {
+            if (this.whiteBallVelocityNeedsUpdate) {
+                // let whiteBallPosition: Vector2 = new Vector2(this.pooltable.whiteBall.p2Body.position[0], this.pooltable.whiteBall.p2Body.position[1]);
+
+                // _.forEach(this.pooltable.balls, (ball: BallGameObject) => {
+                //     if (ball != this.pooltable.whiteBall) {
+                //
+                //         let ballPosition: Vector2 = new Vector2(ball.gameObjectData.xPos, ball.gameObjectData.yPos);
+                //         if (ballPosition.distanceTo(whiteBallPosition) <= (ball.radius + this.pooltable.whiteBall.radius)) {
+                //
+                //             _.forEach(this.pooltable.balls, (otherBall: BallGameObject) => {
+                //                 if (!otherBall.gameObjectData.canBeRemoved && otherBall != this.pooltable.whiteBall) {
+                //                     P2WorldManager.Instance().world.addBody(otherBall.p2Body);
+                //                     otherBall.p2Body.wakeUp();
+                //                 }
+                //             });
+                // this.pooltable.whiteBall.setPosition(this.whiteBallPositionOnCollision.x, this.whiteBallPositionOnCollision.y);
+
+                this.pooltable.whiteBall.p2Body.velocity = [0, 0];
+                this.otherBallOnCollision.p2Body.velocity = [0, 0];
+                if (this.whiteBallDirectionOnCollision && this.otherBallDirectionOnCollision) {
+                    let whiteBallSpeed: number = this.pooltable.whiteBall.speed() * 0.6;
+                    this.pooltable.whiteBall.setPosition(this.whiteBallPositionOnCollision.x, this.whiteBallPositionOnCollision.y);
+
+                    let opposite: number = this.whiteBallDirectionOnCollision.y - this.whiteBallPositionOnCollision.y;
+                    let adjacent: number = this.whiteBallDirectionOnCollision.x - this.whiteBallPositionOnCollision.x;
+                    let raycastAngle: number = Math.atan2(opposite, adjacent);
+
+                    let whiteBallNewVelocity: Vector2 = new Vector2(Math.cos(raycastAngle), Math.sin(raycastAngle)).normalise().multiply(whiteBallSpeed);
+                    this.pooltable.whiteBall.p2Body.velocity = [whiteBallNewVelocity.x, whiteBallNewVelocity.y];
+
+                    opposite = this.otherBallDirectionOnCollision.y - this.otherBallOnCollision.gameObjectData.yPos;
+                    adjacent = this.otherBallDirectionOnCollision.x - this.otherBallOnCollision.gameObjectData.xPos;
+                    raycastAngle = Math.atan2(opposite, adjacent);
+
+                    let ballNewVelocity: Vector2 = new Vector2(Math.cos(raycastAngle), Math.sin(raycastAngle)).normalise().multiply(whiteBallSpeed);
+                    this.otherBallOnCollision.p2Body.velocity = [ballNewVelocity.x, ballNewVelocity.y];
+                }
+
+                this.whiteBallVelocityNeedsUpdate = false;
+            }
+
+
+            // }
+            // });
+            // }
+        });
+
+        // P2WorldManager.Instance().world.on("impact", () => {
+        //     console.log("impact");
+        //
+        // });
+
+        P2WorldManager.Instance().world.on("impact", (evt: any) => {
+            console.log("impact");
+            if (this.contactEnabled) {
+                let isOwnBall: boolean = false;
+
+
                 if (!_.isNull(evt.shapeA.radius) && !_.isUndefined(evt.shapeA.radius) &&
                     !_.isNull(evt.shapeB.radius) && !_.isUndefined(evt.shapeB.radius)) {
                     // console.log("penalty!!!!!");
-                    this.contactEnabled = false;
-                    let isOwnBall: boolean = false;
-                    if (evt.bodyA == this.pooltable.whiteBall.p2Body) {
-                        isOwnBall = this.checkIfOwnBall(evt.bodyB);
+                    let firstBall: BallGameObject = this.getBallByShadow(evt.bodyA);
+                    if(firstBall == undefined)
+                    {
+                        firstBall = this.getBallByBody(evt.bodyA);
+                    }
+                    let secondBall: BallGameObject = this.getBallByShadow(evt.bodyB);
+                    if(secondBall == undefined)
+                    {
+                        secondBall = this.getBallByBody(evt.bodyB);
+                    }
+                    if(firstBall == secondBall)
+                    {
+                        return;
+                    }
 
-                        /* if (this.poolTable.whiteBall.x != this.expectedCollisionPoint.x || this.poolTable.whiteBall.y != this.expectedCollisionPoint.y) {
-                             this.poolTable.whiteBall.x = this.expectedCollisionPoint.x;
-                             this.poolTable.whiteBall.y = this.expectedCollisionPoint.y;
-                             console.log("lock");
-                         }
-                         // if(this.poolTable.whiteBall.x !)
-                         console.log("mumu1 ALBA LA CONTACT!!!!: " + this.poolTable.whiteBall.x, this.poolTable.whiteBall.y);
-                         console.log("mumu1 S-A TRAS!!!!: " + this.expectedCollisionPoint.x, this.expectedCollisionPoint.y);*/
-                    } else if (evt.bodyB == this.pooltable.whiteBall.p2Body) {
-                        isOwnBall = this.checkIfOwnBall(evt.bodyA);
-
-                        /*if (this.poolTable.whiteBall.x != this.expectedCollisionPoint.x || this.poolTable.whiteBall.y != this.expectedCollisionPoint.y) {
-                            this.poolTable.whiteBall.x = this.expectedCollisionPoint.x;
-                            this.poolTable.whiteBall.y = this.expectedCollisionPoint.y;
+                    if (firstBall == this.pooltable.whiteBall) {
+                        this.contactEnabled = false;
+                        this.whiteBallVelocityNeedsUpdate = true;
+                        if (secondBall.ballType == PockeyPlayerManager.Instance().player.data.type) {
+                            isOwnBall = true;
                         }
+                        this.otherBallOnCollision = secondBall;
+                        // this.pooltable.whiteBall.p2Body.velocity = [0, 0];
+                        // this.otherBallOnCollision.p2Body.velocity = [0, 0];
+                        /////
+                        // if (this.whiteBallDirectionOnCollision && this.otherBallDirectionOnCollision) {
+                        //     let whiteBallSpeed: number = this.pooltable.whiteBall.speed() * 0.6;
+                        //     this.pooltable.whiteBall.setPosition(this.whiteBallPositionOnCollision.x, this.whiteBallPositionOnCollision.y);
+                        //
+                        //     let opposite: number = this.whiteBallDirectionOnCollision.y - this.whiteBallPositionOnCollision.y;
+                        //     let adjacent: number = this.whiteBallDirectionOnCollision.x - this.whiteBallPositionOnCollision.x;
+                        //     let raycastAngle: number = Math.atan2(opposite, adjacent);
+                        //
+                        //     let whiteBallNewVelocity: Vector2 = new Vector2(Math.cos(raycastAngle), Math.sin(raycastAngle)).normalise().multiply(whiteBallSpeed);
+                        //     this.pooltable.whiteBall.p2Body.velocity = [whiteBallNewVelocity.x, whiteBallNewVelocity.y];
+                        //
+                        //     opposite = this.otherBallDirectionOnCollision.y - this.otherBallOnCollision.gameObjectData.yPos;
+                        //     adjacent = this.otherBallDirectionOnCollision.x - this.otherBallOnCollision.gameObjectData.xPos;
+                        //     raycastAngle = Math.atan2(opposite, adjacent);
+                        //
+                        //     let ballNewVelocity: Vector2 = new Vector2(Math.cos(raycastAngle), Math.sin(raycastAngle)).normalise().multiply(whiteBallSpeed);
+                        //     this.otherBallOnCollision.p2Body.velocity = [ballNewVelocity.x, ballNewVelocity.y];
+                        // }
+                        /////
 
-                        console.log("mumu2 ALBA LA CONTACT!!!!: " + this.poolTable.whiteBall.x, this.poolTable.whiteBall.y);
-                        console.log("mumu2 S-A TRAS!!!!: " + this.expectedCollisionPoint.x, this.expectedCollisionPoint.y);*/
+                        // return true;
+                    } else if (secondBall == this.pooltable.whiteBall) {
+                        this.contactEnabled = false;
+                        this.whiteBallVelocityNeedsUpdate = true;
+                        if (firstBall.ballType == PockeyPlayerManager.Instance().player.data.type) {
+                            isOwnBall = true;
+                        }
+                        this.otherBallOnCollision = firstBall;
+                        // this.pooltable.whiteBall.p2Body.velocity = [0, 0];
+                        // this.otherBallOnCollision.p2Body.velocity = [0, 0];
+                        /////
+                        // if (this.whiteBallDirectionOnCollision && this.otherBallDirectionOnCollision) {
+                        //     let whiteBallSpeed: number = this.pooltable.whiteBall.speed() * 0.6;
+                        //     this.pooltable.whiteBall.setPosition(this.whiteBallPositionOnCollision.x, this.whiteBallPositionOnCollision.y);
+                        //
+                        //     let opposite: number = this.whiteBallDirectionOnCollision.y - this.whiteBallPositionOnCollision.y;
+                        //     let adjacent: number = this.whiteBallDirectionOnCollision.x - this.whiteBallPositionOnCollision.x;
+                        //     let raycastAngle: number = Math.atan2(opposite, adjacent);
+                        //
+                        //     let whiteBallNewVelocity: Vector2 = new Vector2(Math.cos(raycastAngle), Math.sin(raycastAngle)).normalise().multiply(whiteBallSpeed);
+                        //     this.pooltable.whiteBall.p2Body.velocity = [whiteBallNewVelocity.x, whiteBallNewVelocity.y];
+                        //
+                        //     opposite = this.otherBallDirectionOnCollision.y - this.otherBallOnCollision.gameObjectData.yPos;
+                        //     adjacent = this.otherBallDirectionOnCollision.x - this.otherBallOnCollision.gameObjectData.xPos;
+                        //     raycastAngle = Math.atan2(opposite, adjacent);
+                        //
+                        //     let ballNewVelocity: Vector2 = new Vector2(Math.cos(raycastAngle), Math.sin(raycastAngle)).normalise().multiply(whiteBallSpeed);
+                        //     this.otherBallOnCollision.p2Body.velocity = [ballNewVelocity.x, ballNewVelocity.y];
+                        // }
+                        /////
+
+                        // return true;
                     }
 
-                    if (isOwnBall) {
-                        SignalsManager.DispatchSignal(PockeySignalTypes.OWN_BALL_TOUCHED_FIRST);
 
-                        // SignalsManager.DispatchSignal(PockeySignalTypes.FIRST_BALL_FAULT);
-                        // SignalsManager.DispatchSignal(PockeySignalTypes.UPDATE_UI_TEXT, [PockeyStateTexts.whiteBallFault]);
-                    }
+                }
+
+                if (isOwnBall) {
+                    SignalsManager.DispatchSignal(PockeySignalTypes.OWN_BALL_TOUCHED_FIRST);
+
+                    // SignalsManager.DispatchSignal(PockeySignalTypes.FIRST_BALL_FAULT);
+                    // SignalsManager.DispatchSignal(PockeySignalTypes.UPDATE_UI_TEXT, [PockeyStateTexts.whiteBallFault]);
                 }
             }
-        }, this);
+
+
+        }, this);*/
+
+
     }
 
+    //@ts-ignore
+    private getBallByBody(body: p2.Body): BallGameObject {
+        let ballByBody: BallGameObject = undefined;
+
+        _.forEach(this.pooltable.balls, (ball: BallGameObject) => {
+            if (ball.p2Body === body) {
+                ballByBody = ball;
+                return true;
+            }
+        });
+
+        return ballByBody;
+    }
+
+    //@ts-ignore
+    private getBallByShadow(body: p2.Body): BallGameObject {
+        let ballByBody: BallGameObject = undefined;
+
+        _.forEach(this.pooltable.balls, (ball: BallGameObject) => {
+            if (ball.p2Shadow === body) {
+                ballByBody = ball;
+                return true;
+            }
+        });
+
+        return ballByBody;
+    }
+
+    // @ts-ignore
     private checkIfOwnBall(body: p2.Body): boolean {
+
         let isOwnBall: boolean = false;
         _.forEach(this.pooltable.balls, (ball: PockeyGameObject) => {
             if (ball.ballType == PockeyPlayerManager.Instance().player.data.type && ball.p2Body.id == body.id) {
@@ -320,16 +538,23 @@ export class PoolTableManager {
         // this.ballWasShot = true;
         // this.ticker.add(this.update, this);
         // let power = this.poolTable.poolStick.power;
-
-        _.forEach(this.pooltable.balls, (ball: BallGameObject) => {
-            if (!ball.gameObjectData.canBeRemoved || ball.ballType == BallType.White) {
-                P2WorldManager.Instance().world.removeBody(ball.p2Shadow);
-                ball.p2Body.wakeUp();
-            }
-        });
+        if(this.whiteBallDirectionOnCollision == undefined || this.otherBallDirectionOnCollision == undefined)
+        {
+            this.addBodies();
+        }
+        else
+        {
+            this.removeBodies();
+            P2WorldManager.Instance().world.addBody(this.pooltable.whiteBall.p2Body);
+        }
 
         let velo: Vector2 = new Vector2(this.pooltable.stick.power * Math.cos(this.pooltable.stick.gameObjectData.rotation), this.pooltable.stick.power * Math.sin(this.pooltable.stick.gameObjectData.rotation));
 
+        // P2WorldManager.Instance().world.removeBody(this.pooltable.whiteBall.p2Shadow);
+
+
+
+        this.pooltable.whiteBall.p2Body.wakeUp();
         this.pooltable.whiteBall.reset();
         this.pooltable.whiteBall.onShoot(velo);
         // P2WorldManager.Instance().world.removeBody(this.pooltable.whiteAbstract.p2Shadow);
@@ -362,6 +587,13 @@ export class PoolTableManager {
 
 
         // console.log("mumu !!!!: " + this.expectedCollisionPoint.x, this.expectedCollisionPoint.y);
+
+        /* let s: PIXI.Graphics = new PIXI.Graphics();
+         s.beginFill(0xff9900);
+         s.drawCircle(this.whiteBallPositionOnCollision.x, this.whiteBallPositionOnCollision.y, 4);
+         s.drawCircle(this.whiteBallDirectionOnCollision.x, this.whiteBallDirectionOnCollision.y, 4);
+         s.endFill();
+         this.pooltable.addChild(s);*/
     }
 
     private createMeshes(): void {
@@ -459,6 +691,30 @@ export class PoolTableManager {
         });
     }
 
+    public removeShadows(): void {
+        _.forEach(this.pooltable.balls, (ball: BallGameObject) => {
+            if (!ball.gameObjectData.canBeRemoved) {
+                ball.removeShadowBody();
+            }
+        });
+    }
+
+    public removeBodies(): void {
+        _.forEach(this.pooltable.balls, (ball: BallGameObject) => {
+            if (!ball.gameObjectData.canBeRemoved) {
+                ball.removeBody();
+            }
+        });
+    }
+
+    public addBodies(): void {
+        _.forEach(this.pooltable.balls, (ball: BallGameObject) => {
+            if (!ball.gameObjectData.canBeRemoved) {
+                ball.addBody();
+            }
+        });
+    }
+
     public update(delta: number): void {
         // this.pooltable.whiteBall.update();
 
@@ -480,6 +736,8 @@ export class PoolTableManager {
                 }
                 this.ballPositionCircleMesh.position.x = this.pooltable.whiteBall.gameObjectData.xPos;
                 this.ballPositionCircleMesh.position.y = -this.pooltable.whiteBall.gameObjectData.yPos - PockeySettings.BABYLON_Y_OFFSET;
+            } else if (this.pooltable.stick.gameObjectData.state == PockeyStates.onShoot && !this.graphicsHidden) {
+                this.hideBallRayGraphics();
             } else {
 //                 console.log("intra la watch -> rearrange");
 
@@ -487,6 +745,24 @@ export class PoolTableManager {
             }
 
         } else if (PockeyStateMachine.Instance().fsm.currentState == PockeyStates.onShoot) {
+            /* if (this.whiteBallVelocityNeedsUpdate) {
+                 // let opposite: number = this.pooltable.whiteBall.p2Body.position[0] - this.pooltable.stick.whiteBallDirection.x;
+                 // let adjacent: number = this.pooltable.whiteBall.p2Body.position[1] - this.pooltable.stick.whiteBallDirection.y;
+                 // let raycastAngle: number = Math.atan2(opposite, adjacent);
+                 //
+                 // let whiteBallNewVelocity:Vector2 = new Vector2(Math.cos(raycastAngle), Math.sin(raycastAngle)).multiply(100);
+                 // let opposite: number = this.pooltable.whiteBall.p2Body.position[0] - this.pooltable.stick.whiteBallDirection.x;
+                 // let adjacent: number = this.pooltable.whiteBall.p2Body.position[1] - this.pooltable.stick.whiteBallDirection.y;
+                 // let raycastAngle: number = Math.atan2(opposite, adjacent);
+
+                 // this.whiteBallNewVelocity = new Vector2(Math.cos(raycastAngle), Math.sin(raycastAngle)).multiply(this.pooltable.whiteBall.speed());
+                 // this.pooltable.whiteBall.p2Body.sleep();
+                 // evt.bodyB.sleep();
+
+                 // this.pooltable.whiteBall.p2Body.velocity = [this.whiteBallNewVelocity.x, this.whiteBallNewVelocity.y];
+
+                 this.whiteBallVelocityNeedsUpdate = false;
+             }*/
             if (!this.ballsAreMoving()) {
                 SignalsManager.DispatchSignal(PockeySignalTypes.END_TURN);
             }
@@ -501,6 +777,7 @@ export class PoolTableManager {
         });
 
         this.pooltable.stick.update();
+
 
     }
 
@@ -692,9 +969,10 @@ export class PoolTableManager {
             // this.poolTable.raycastFollower.y = hitPoint.y;
             // this.raycastFollowerPosition = new Vector2(hitPoint.x, hitPoint.y)
 
-
             this.raycastFollowerMesh.position.x = hitPoint.x;
             this.raycastFollowerMesh.position.y = -hitPoint.y - PockeySettings.BABYLON_Y_OFFSET;
+
+            this.whiteBallPositionOnCollision = new Vector2(hitPoint.x, hitPoint.y);
 
             // this.expectedCollisionPoint = new Vector2(hitPoint.x, hitPoint.y);
 
@@ -707,7 +985,8 @@ export class PoolTableManager {
             /*this.poolTable.whiteBallReflectionArrow.visible = false;
             this.poolTable.otherBallReflectionArrow.visible = false;*/
             // this.poolTable.ballPositionCircleOnRaycast.visible = true;
-
+            this.whiteBallDirectionOnCollision = undefined;
+            this.otherBallDirectionOnCollision = undefined;
             //if the follower hits a ball, then show collision directions graphics
             if (!_.isNull(result.shape.radius) && !_.isUndefined(result.shape.radius)) {
                 let isOwnBall: boolean = this.checkIfOwnShadow(result.body);
@@ -778,8 +1057,7 @@ export class PoolTableManager {
                 let length: number = tangentVector.dot(relativeVelocity);
 
                 let cotangentVector: Vector2 = relativeVelocity.substract(tangentVector.multiply(length)).normalise();
-                let directionLength: number = 18;
-
+                let directionLength: number = 38;
 
                 let distanceToTheOtherBall: number =
                     new Vector2(this.hitPoint[0] - Math.cos(raycastAngle) * PockeySettings.BALL_RADIUS, this.hitPoint[1] - Math.sin(raycastAngle) * PockeySettings.BALL_RADIUS)
@@ -796,7 +1074,7 @@ export class PoolTableManager {
                 this.graph.drawCircle(result.body.position[0], result.body.position[1], 4);
                 this.graph.drawCircle(this.poolTable.raycastFollower.x, this.poolTable.raycastFollower.y, 4);
                 this.graph.endFill();*/
-                this.arrowsDeviationLength = PockeySettings.BALL_RADIUS * 2 - this.calculateDeviation(new Vector2(hitPoint.x, hitPoint.y), new Vector2(this.pooltable.whiteBall.gameObjectData.xPos, this.pooltable.whiteBall.gameObjectData.yPos), new Vector2(result.body.position[0], result.body.position[1]));
+                // this.arrowsDeviationLength = PockeySettings.BALL_RADIUS * 2 - this.calculateDeviation(new Vector2(hitPoint.x, hitPoint.y), new Vector2(this.pooltable.whiteBall.gameObjectData.xPos, this.pooltable.whiteBall.gameObjectData.yPos), new Vector2(result.body.position[0], result.body.position[1]));
                 // console.log("deviationsalam: " + this.arrowsDeviationLength);
 
                 /*   opposite = hitPoint.x - tangentVector.x;
@@ -827,7 +1105,7 @@ export class PoolTableManager {
 
                     opposite = startPoint.x - hitPoint.x;
                     adjacent = startPoint.y - hitPoint.y;
-                    raycastAngle = Math.atan2(opposite, adjacent) + whiteBallArrowAngleCorrection * (this.arrowsDeviationLength / 3.38) * Math.PI / 180;
+                    raycastAngle = Math.atan2(opposite, adjacent) + whiteBallArrowAngleCorrection * (Math.PI / 180);
 
 // console.log("unghi ajustare: " + (this.arrowsDeviationLength / 3));
                     // point[1] - (Math.cos(angle) * distance)
@@ -858,6 +1136,7 @@ export class PoolTableManager {
                         startPoint.y + Math.cos(raycastAngle) * (PockeySettings.BALL_RADIUS * arrowScaleFactor),
                     );
 
+
                     this.whiteBallDirectionPoints = [[startPoint.x, -startPoint.y - PockeySettings.BABYLON_Y_OFFSET], [endPoint.x, -endPoint.y - PockeySettings.BABYLON_Y_OFFSET]];
 
                     // this.whiteBallPostCollisionDirectionMesh = BABYLON.Mesh.CreateLines("whiteBallPostCollisionDirectionMesh", [new Vector3(this.whiteBallDirectionPoints[0][0], this.whiteBallDirectionPoints[0][1], 0), new Vector3(this.whiteBallDirectionPoints[1][0], this.whiteBallDirectionPoints[1][1], 0)], AbstractEntryPoint.scene, true);
@@ -884,6 +1163,7 @@ export class PoolTableManager {
                     endPoint.x += Math.sin(raycastAngle) * (directionLength + 10);
                     endPoint.y += Math.cos(raycastAngle) * (directionLength + 10);
 
+                    this.whiteBallDirectionOnCollision = new Vector2(endPoint.x, endPoint.y);
 
                     // let dottedLineArrowPoint: Vector2 = PixiDashedLine.drawDashedLine(this.graph, startPoint.x, startPoint.y, endPoint.x, endPoint.y, 1, 0, 0xffffff, 4, 1);
                     // directionLength = 28;
@@ -1012,6 +1292,7 @@ export class PoolTableManager {
                     // dottedLineArrowPoint = PixiDashedLine.drawDashedLine(this.graph, startPoint.x, startPoint.y, endPoint.x, endPoint.y, 1, 0, 0xffffff, 4, 1);
                     // dottedLineArrowPoint = PixiDashedLine.drawDottedLine(this.graph, startPoint.x, startPoint.y, endPoint.x, endPoint.y, 1, 10, 0xffffff, 1);
 
+                    this.otherBallDirectionOnCollision = new Vector2(endPoint.x, endPoint.y);
                     this.otherBallReflectionArrowMesh.position.x = endPoint.x;
                     this.otherBallReflectionArrowMesh.position.y = -endPoint.y - PockeySettings.BABYLON_Y_OFFSET;
                     this.otherBallReflectionArrowMesh.rotation.z = -Math.atan2(endPoint.y - startPoint.y, endPoint.x - startPoint.x) - 135 * Math.PI / 180;
@@ -1032,44 +1313,44 @@ export class PoolTableManager {
 
     };
 
-    private calculateDeviation(point: Vector2, firstSegmentPoint: Vector2, secondSegmentPoint: Vector2): number {
-        // return Math.sqrt(this.distToSegmentSquared(point, firstSegmentPoint, secondSegmentPoint));
-        let x = point.x;
-        let y = point.y;
-        let x1 = firstSegmentPoint.x;
-        let y1 = firstSegmentPoint.y;
-        let x2 = secondSegmentPoint.x;
-        let y2 = secondSegmentPoint.y;
-
-        let A = x - x1;
-        let B = y - y1;
-        let C = x2 - x1;
-        let D = y2 - y1;
-
-        let dot = A * C + B * D;
-        let len_sq = C * C + D * D;
-        let param = -1;
-        if (len_sq != 0) //in case of 0 length line
-            param = dot / len_sq;
-
-        let xx, yy;
-
-        if (param < 0) {
-            xx = x1;
-            yy = y1;
-        } else if (param > 1) {
-            xx = x2;
-            yy = y2;
-        } else {
-            xx = x1 + param * C;
-            yy = y1 + param * D;
-        }
-
-        let dx = x - xx;
-        let dy = y - yy;
-
-        return Math.sqrt(dx * dx + dy * dy);
-    }
+    // private calculateDeviation(point: Vector2, firstSegmentPoint: Vector2, secondSegmentPoint: Vector2): number {
+    //     // return Math.sqrt(this.distToSegmentSquared(point, firstSegmentPoint, secondSegmentPoint));
+    //     let x = point.x;
+    //     let y = point.y;
+    //     let x1 = firstSegmentPoint.x;
+    //     let y1 = firstSegmentPoint.y;
+    //     let x2 = secondSegmentPoint.x;
+    //     let y2 = secondSegmentPoint.y;
+    //
+    //     let A = x - x1;
+    //     let B = y - y1;
+    //     let C = x2 - x1;
+    //     let D = y2 - y1;
+    //
+    //     let dot = A * C + B * D;
+    //     let len_sq = C * C + D * D;
+    //     let param = -1;
+    //     if (len_sq != 0) //in case of 0 length line
+    //         param = dot / len_sq;
+    //
+    //     let xx, yy;
+    //
+    //     if (param < 0) {
+    //         xx = x1;
+    //         yy = y1;
+    //     } else if (param > 1) {
+    //         xx = x2;
+    //         yy = y2;
+    //     } else {
+    //         xx = x1 + param * C;
+    //         yy = y1 + param * D;
+    //     }
+    //
+    //     let dx = x - xx;
+    //     let dy = y - yy;
+    //
+    //     return Math.sqrt(dx * dx + dy * dy);
+    // }
 
     protected onRepositionWhiteBall(): void {
 
@@ -1316,6 +1597,13 @@ export class PoolTableManager {
     }
 
     public startOnRearrange(): void {
+        /* _.forEach(this.pooltable.balls, (ball: BallGameObject) => {
+             if (!ball.gameObjectData.canBeRemoved || ball.ballType == BallType.White) {
+                 // P2WorldManager.Instance().world.removeBody(ball.p2Shadow);
+                 P2WorldManager.Instance().world.removeBody(ball.p2Body);
+                 // ball.p2Body.wakeUp();
+             }
+         });*/
         this.goalieMover.startMoving();
         this.reactivateStick();
     }

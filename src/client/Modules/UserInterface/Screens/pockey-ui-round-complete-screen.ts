@@ -150,7 +150,7 @@ export class RoundCompleteScreen extends AbstractScreen {
     private handleRoundComplete(): void {
         (this.textDiv as HTMLDivElement).innerText = "";
         (this.titleDiv as HTMLDivElement).innerText = "ROUND COMPLETE";
-        (this.roundNumberDiv as HTMLDivElement).style.background = "url(../Assets/Desktop/Images/hud_matchbanner-round" + this.currentRound.toString() + ".svg) bottom center / 100% no-repeat";
+        (this.roundNumberDiv as HTMLDivElement).style.background = "url(../Assets/Desktop/Images/UI/hud_matchbanner-round" + this.currentRound.toString() + ".svg) bottom center / 100% no-repeat";
         (this.rematchButton as HTMLDivElement).style.display = "none";
         (this.mainMenuButton as HTMLDivElement).style.display = "none";
         (this.newOpponentButton as HTMLDivElement).style.display = "none";
@@ -163,7 +163,7 @@ export class RoundCompleteScreen extends AbstractScreen {
         } else if (PockeyPlayerManager.Instance().opponent.roundsWon >= 2) {
             (this.textDiv as HTMLDivElement).innerText = "MATCH complete! you lost!";
         }
-        (this.roundNumberDiv as HTMLDivElement).style.background = "url(../Assets/Desktop/Images/hud_matchbanner-round" + this.currentRound.toString() + ".svg) bottom center / 100% no-repeat";
+        (this.roundNumberDiv as HTMLDivElement).style.background = "url(../Assets/Desktop/Images/UI/hud_matchbanner-round" + this.currentRound.toString() + ".svg) bottom center / 100% no-repeat";
         (this.titleDiv as HTMLDivElement).innerText = "MATCH COMPLETE";
 
         (this.mainMenuButton as HTMLDivElement).style.display = "block";
@@ -178,7 +178,7 @@ export class RoundCompleteScreen extends AbstractScreen {
     private handlePlayerDisconnected(): void {
         (this.titleDiv as HTMLDivElement).innerText = "MATCH COMPLETE";
         (this.textDiv as HTMLDivElement).innerText = "opponent DISCONNECTED";
-        (this.roundNumberDiv as HTMLDivElement).style.background = "url(../Assets/Desktop/Images/hud_matchbanner-round" + this.currentRound.toString() + ".svg) bottom center / 100% no-repeat";
+        (this.roundNumberDiv as HTMLDivElement).style.background = "url(../Assets/Desktop/Images/UI/hud_matchbanner-round" + this.currentRound.toString() + ".svg) bottom center / 100% no-repeat";
         (this.mainMenuButton as HTMLDivElement).style.display = "block";
         (this.newOpponentButton as HTMLDivElement).style.display = "block";
         (this.rematchButton as HTMLDivElement).style.display = "none";

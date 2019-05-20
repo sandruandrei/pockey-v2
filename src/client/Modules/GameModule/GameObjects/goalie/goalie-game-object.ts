@@ -23,10 +23,11 @@ export class GoalieGameObject extends PockeyGameObject {
     private goaliePolygonCoord: number[][];
     private goalieShadowPolygonCoord: number[][];
 
-    constructor(name:string, ballType:BallType) {
-        super(name, ballType);
+    public build(): GoalieGameObject {
+        this.createElements();
+        this.addGraphicObject();
+        this.postConstructor();
 
-        // console.log("this.ballType: " + this.ballType);
         if (this.ballType == BallType.Left) {
             this.p2Body.angle = Math.PI;
             this.p2Shadow.angle = Math.PI;
@@ -35,8 +36,9 @@ export class GoalieGameObject extends PockeyGameObject {
         } else {
             this.setPosition(468, 0);
         }
-    }
 
+        return this;
+    }
 
     protected createElements(): void {
         super.createElements();

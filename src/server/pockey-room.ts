@@ -89,6 +89,10 @@ export class PockeyRoom {
             this.updateScore(player.data.socketID, ballType);
         });
 
+        player.socket.on(PockeySocketMessages.PUCK_IN_THE_HALL, (ballType: BallType) => {
+            this.updateScore(player.data.socketID, ballType, true);
+        });
+
         player.socket.on(PockeySocketMessages.OWN_BALL_TOUCHED_FIRST, () => {
             this.onOwnBallTouchedFirst();
         });
@@ -116,9 +120,13 @@ export class PockeyRoom {
         this.ownBallFault = true;
     }
 
-    private updateScore(socketID: string, ballType: BallType): void {
+    private updateScore(socketID: string, ballType: BallType, isPuckGoal: boolean = false): void {
         let player: Player;
         let opponent: Player;
+        let pointsScored: number = 1;
+        if (isPuckGoal) {
+            pointsScored = 2;
+        }
         // _.forEach(this.players, (playa: Player) => {
         if (socketID == this.players[0].data.socketID) {
             player = this.players[0];
@@ -135,7 +143,7 @@ export class PockeyRoom {
             } else {
                 this.opponentBallScored = true;
             }
-            player.data.currentScore--;
+            player.data.currentScore -= pointsScored;
             this.scoreUpdated = true;
         } else if (ballType == opponent.data.type) {
             if (this.currentPlayer == opponent) {
@@ -143,7 +151,7 @@ export class PockeyRoom {
             } else {
                 this.opponentBallScored = true;
             }
-            opponent.data.currentScore--;
+            opponent.data.currentScore -= pointsScored;
             this.scoreUpdated = true;
         } else if (ballType == BallType.White) {
             this.whiteBallInTheHall = true;

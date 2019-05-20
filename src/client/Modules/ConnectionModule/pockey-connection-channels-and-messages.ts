@@ -10,6 +10,7 @@ export class PockeySocketMessages {
     // public static OPPONENT_RESTART: any;
 
     public static BALL_IN_THE_HALL: string = "PockeySocketMessages." + "BALL_IN_THE_HALL";
+    public static PUCK_IN_THE_HALL: string = "PockeySocketMessages." + "PUCK_IN_THE_HALL";
     public static SCORE_UPDATED: string = "PockeySocketMessages." + "SCORE_UPDATED";
     public static CHECK_NEXT_TURN: string = "PockeySocketMessages." + "CHECK_NEXT_TURN";
     public static CHANGE_STATE: string = "PockeySocketMessages." + "CHANGE_STATE";

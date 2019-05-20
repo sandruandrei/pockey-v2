@@ -18,7 +18,7 @@ import {BallType} from "../../../../../common/pockey-value-objects";
 
 export class BallGameObject extends PockeyGameObject {
 
-    private ballInPocketAnimationTimeline: TimelineMax;
+    protected ballInPocketAnimationTimeline: TimelineMax;
     public mass: number = 1.4;
     public velocity: Vector2;
     public moving: boolean = false;
@@ -48,16 +48,21 @@ export class BallGameObject extends PockeyGameObject {
 
     protected delta: number;
 
-    private _isOnReposition: boolean = false;
-    private _isOnRearrange: boolean = false;
+    protected _isOnReposition: boolean = false;
+    protected _isOnRearrange: boolean = false;
     public radius: number = PockeySettings.BALL_RADIUS;
     // public p2Body: p2.Body;
     // public p2Shadow: p2.Body;
     // protected updatesReceived: number = 0;
 
-    constructor(name: string, ballType: BallType) {
-        super(name, ballType);
+    public build(): BallGameObject {
+        if (this.ballType == BallType.Puck) {
+            this.radius = PockeySettings.PUCK_RADIUS;
+        }
 
+        this.createElements();
+        this.addGraphicObject();
+        this.postConstructor();
         // this.createBallShadow();
 
         this.moving = false;
@@ -73,6 +78,8 @@ export class BallGameObject extends PockeyGameObject {
         // this.name = this.ballType + id;
 
         PockeyPlayerManager.Instance().player.pockeyGameWorld.addGameObject(this);
+
+        return this;
     }
 
     protected getP2Shadow(): p2.Body {
@@ -86,16 +93,6 @@ export class BallGameObject extends PockeyGameObject {
         p2Body.addShape(circleShape);
 
         return p2Body;
-    }
-
-    protected createElements(): void {
-        super.createElements();
-
-        if (this.ballType != BallType.Puck) {
-            this.radius = PockeySettings.BALL_RADIUS;
-        } else {
-            this.radius = PockeySettings.PUCK_RADIUS;
-        }
     }
 
     set isOnReposition(value: boolean) {
@@ -132,10 +129,6 @@ export class BallGameObject extends PockeyGameObject {
     }
 
     protected getP2Body(): p2.Body {
-        if (this.ballType == BallType.Puck) {
-            this.radius = PockeySettings.PUCK_RADIUS;
-        }
-
         let p2Body: p2.Body = new p2.Body({
             mass: this.mass,
             fixedRotation: false
@@ -552,6 +545,22 @@ export class BallGameObject extends PockeyGameObject {
         this.p2Shadow.position[1] = this.gameObjectData.yPos;
 
         P2WorldManager.Instance().world.addBody(this.p2Shadow);
+    }
+
+    public removeShadowBody(): void {
+
+        P2WorldManager.Instance().world.removeBody(this.p2Shadow);
+    }
+
+    public addBody(): void {
+
+        P2WorldManager.Instance().world.addBody(this.p2Body);
+    }
+
+
+    public removeBody(): void {
+
+        P2WorldManager.Instance().world.removeBody(this.p2Body);
     }
 
     // public enableSphere(): void {

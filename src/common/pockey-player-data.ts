@@ -27,15 +27,3 @@ export interface PockeyPlayerData {
     currentScore?: number
     roundsWon?: number
 }
-
-// public id: string;
-// public nickname: string;
-// public type: BallType;
-// public score: number;
-// public roundsWon: number = 0;
-// public color: number;
-// public ballType: string;
-// public startedFirst: boolean = false;
-// public avatarID: string = '';
-// public feltID: string = '';
-// public shootouts: number = 3;

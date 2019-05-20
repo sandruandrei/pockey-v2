@@ -224,21 +224,21 @@ input[type=text]:hover {
 }
 
 #MainMenuPlayerWins {
-    background-image: url("../Assets/Desktop/Images/stat-wins-color.svg");
+    background-image: url("../Assets/Desktop/Images/Stats/stat-wins-color.svg");
 }
 
 #MainMenuPlayerLosses {
-    background-image: url("../Assets/Desktop/Images/stat-winloss-color.svg");
+    background-image: url("../Assets/Desktop/Images/Stats/stat-winloss-color.svg");
 }
 
 #MainMenuPlayerStreak {
-    background-image: url("../Assets/Desktop/Images/stat-ballstreak-color.svg");
+    background-image: url("../Assets/Desktop/Images/Stats/stat-ballstreak-color.svg");
     background-size: 74%;
     background-position: center 6px;
 }
 
 #MainMenuPlayerFouls {
-    background-image: url("../Assets/Desktop/Images/stat-penalty-color.svg");
+    background-image: url("../Assets/Desktop/Images/Stats/stat-penalty-color.svg");
 }
 
 .mainMenuRankingText {
@@ -268,7 +268,7 @@ background-color: #ffffff1a;
 
 float: left;
 
-background-image: url("../Assets/Desktop/Images/stat-penalty-color.svg");
+background-image: url("../Assets/Desktop/Images/Stats/stat-penalty-color.svg");
 
 background-size: 88%;
 
@@ -503,7 +503,7 @@ margin-bottom: 4px;
 }
 
 #AvatarImage {
-    background: url("../Assets/Desktop/Images/avatar_guest.png");
+    background: url("../Assets/Desktop/Images/InventoryScreen/avatars/avatar_guest.png");
     background-size: contain;
     width: 62px;
     height: 62px;
@@ -799,27 +799,48 @@ margin-bottom: 4px;
 }
 
 #MainMenuElementsHolder {
-width: 1012px;
-height: 420px;
-/* overflow: hidden; */
-/* background: green; */
-/* float: left; */
-left: 50%;
-top: 50%;
-transform: translate(-50%, -50%);
-position: absolute;
-/* margin: auto; */
-/* top: 0; */
-/* right: 0; */
-/* bottom: 0; */
-/* left: 0; */
-/* position: absolute; */
-/* left:50%; */
-/* top:50%; */
-/* margin: auto; */
-/* width: 60%; */
-display: none;
-/* padding-top: 33%; */
+
+width: 1012px;
+
+height: 420px;
+
+/* overflow: hidden; */
+
+/* background: green; */
+
+/* float: left; */
+
+left: 50%;
+
+top: 50%;
+
+transform: translate(-50%, -50%);
+
+position: absolute;
+
+/* margin: auto; */
+
+/* top: 0; */
+
+/* right: 0; */
+
+/* bottom: 0; */
+
+/* left: 0; */
+
+/* position: absolute; */
+
+/* left:50%; */
+
+/* top:50%; */
+
+/* margin: auto; */
+
+/* width: 60%; */
+
+display: none;
+
+/* padding-top: 33%; */
 }
 
 /*.notVs {*/
@@ -1155,7 +1176,7 @@ div#PlayerFoundOpponentAvatarAndStats {
 }
 
 .avatarImage {
-    background: url("../Assets/Desktop/Images/avatar_guest.png") center center / 100% no-repeat rgb(26, 65, 87);
+    background: url("../Assets/Desktop/Images/InventoryScreen/avatars/avatar_guest.png") center center / 100% no-repeat rgb(26, 65, 87);
     width: calc(100% - 6px);
     height: calc(100% - 6px);
 }
@@ -1384,7 +1405,7 @@ div#RoundOneStartsText {
 }
 
 .screenBanner {
-    background: url(../Assets/Desktop/Images/hud_matchbanner.svg) bottom center / 100% no-repeat;
+    background: url(../Assets/Desktop/Images/UI/hud_matchbanner.svg) bottom center / 100% no-repeat;
     /* width: 80px; */
     height: 100%;
 }
@@ -1399,7 +1420,7 @@ div#RoundOneStartsText {
 }
 
 .screenVS {
-    background: url(../Assets/Desktop/Images/hud_matchbanner-VS.svg) top center / contain no-repeat;
+    background: url(../Assets/Desktop/Images/UI/hud_matchbanner-VS.svg) top center / contain no-repeat;
     width: 42px;
     height: 41px;
     position: absolute;
@@ -1411,7 +1432,7 @@ div#RoundOneStartsText {
 }
 
 .screenRoundNumber {
-    background: url(../Assets/Desktop/Images/hud_matchbanner-round2.svg) bottom center / 100% no-repeat;
+    background: url(../Assets/Desktop/Images/UI/hud_matchbanner-round2.svg) bottom center / 100% no-repeat;
     width: 19px;
     height: 35px;
     position: absolute;
@@ -1429,21 +1450,36 @@ div#RoundCompleteScreen {
 }
 
 .screenButton{
-/* float: left; */
-/* flex-basis: 200px; */
-background: aquamarine;
-width: 17%;
-float: right;
-font-size: 15px;
-/* height: auto; */
-color: black;
-/* display: none; */
--webkit-touch-callout: none; /* iOS Safari */
--webkit-user-select: none; /* Safari */
--khtml-user-select: none; /* Konqueror HTML */
--moz-user-select: none; /* Firefox */
--ms-user-select: none; /* Internet Explorer/Edge */
-user-select: none;
+
+/* float: left; */
+
+/* flex-basis: 200px; */
+
+background: aquamarine;
+
+width: 17%;
+
+float: right;
+
+font-size: 15px;
+
+/* height: auto; */
+
+color: black;
+
+/* display: none; */
+
+-webkit-touch-callout: none; /* iOS Safari */
+
+-webkit-user-select: none; /* Safari */
+
+-khtml-user-select: none; /* Konqueror HTML */
+
+-moz-user-select: none; /* Firefox */
+
+-ms-user-select: none; /* Internet Explorer/Edge */
+
+user-select: none;
 }
 
 div#MatchCompleteText {
@@ -1460,11 +1496,11 @@ div#MatchCompleteText {
 }
 
 div#ScreenMainMenuButton {
-    /* display: none; */ */
+    /* display: none; */
 }
 
 div#ScreenRematchButton {
-    /* display: none; */ */
+    /* display: none; */
 }
 
 .screenText {

@@ -14,14 +14,6 @@ import {
     FrameworkSocketNamespaces
 } from "../client/qFramework/AbstractModules/Connection/connection-channels-and-messages";
 
-/*
-import {FrameworkSocketEvents} from "../client/qFramework/AbstractModules/Connection/connection-channels-and-messages";
-import * as _ from "lodash";
-import {PockeySettings} from "../client/pockey-settings";
-import {SignalsManager} from "../client/qFramework/Signals/signals-manager";
-import {PockeySignalTypes} from "../client/Modules/SignalsModule/pockey-signal-types";
-import {Settings} from "../client/qFramework/Settings";
-*/
 export class Player {
     public data: PockeyPlayerData = {};
     public socket: any;

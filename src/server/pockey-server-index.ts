@@ -365,13 +365,6 @@ export class PockeyServerIndex {
             });
     }
 
-
-    /* private createGame(): void {
-         this.gameEngine = new PockeyGameEngineForServer({traceLevel: Trace.TRACE_NONE});
-         this.serverEngine = new PockeyServerEngine(this.socketIo, this.gameEngine, {debug: {}, updateRate: 6});
-         // start the game
-         // this.serverEngine.start();
-     }*/
 }
 
 new PockeyServerIndex();

@@ -253,73 +253,6 @@ export class PockeyEntryPoint extends AbstractEntryPoint {
 
     }
 
-    // function animate(time){
-    //     requestAnimationFrame(animate);
-    //
-    //     // Compute elapsed time since last render frame
-    //     var deltaTime = lastTime ? (time - lastTime) / 1000 : 0;
-    //
-    //     // Move bodies forward in time
-    //     world.step(fixedTimeStep, deltaTime, maxSubSteps);
-    //
-    //     // Render the circle at the current interpolated position
-    //     renderCircleAtPosition(circleBody.interpolatedPosition);
-    //
-    //     lastTime = time;
-    // }
-
-    // protected frameAnimate(): void {
-    //     super.frameAnimate();
-    //
-    //     this.animate(Date.now());
-    //     // if (P2WorldManager.Instance().world)
-    //     //     P2WorldManager.Instance().world.step(PockeySettings.P2_WORLD_STEP);
-    //
-    //     // let d = new Date();
-    //     // var n = d.getTime();
-    //     // this.animate(d.getTime());
-    //
-    //     // P2WorldManager.Instance().world.step(1/60);
-    //     // var timeStep:number = 1/60;
-    //     // setInterval(function(){
-    //     //     P2WorldManager.Instance().world.step(timeStep);
-    //
-    //     // if(this.groundBody)
-    //     // console.log("ground body: " + this.groundBody.position);
-    //
-    //     // if (this.circleBody)
-    //     // console.log("circle body: " + this.circleBody.velocity);
-    // }
-
-    // Frame rate independent! Success!
-    // var fixedTimeStep = 1 / 60, maxSubSteps = 10, lastTimeMilliseconds;
-    // private requestAnimationFrame( animloop(timeMilliseconds):Function){
-    //     requestAnimationFrame(animloop);
-    //     var timeSinceLastCall = 0;
-    //     if(timeMilliseconds !== undefined && this.lastTime !== undefined){
-    //         timeSinceLastCall = (timeMilliseconds - this.lastTime) / 1000;
-    //     }
-    //     P2WorldManager.Instance().world.step(PockeySettings.P2_WORLD_STEP, timeSinceLastCall, this.maxSubSteps);
-    //     this.lastTime = timeMilliseconds;
-    // }
-
-    // Animation loop
-    // private animate(time: number) {
-    //     /* var timeSinceLastCall = 0;
-    //      if(time !== undefined && this.lastTimeMilliseconds !== undefined){
-    //          timeSinceLastCall = (time - this.lastTimeMilliseconds) / 1000;
-    //      }
-    //      P2WorldManager.Instance().world.step(this.fixedTimeStep, timeSinceLastCall, this.maxSubSteps);
-    //      this.lastTimeMilliseconds = time;*/
-    //
-    //     let timeSeconds: number = time / 1000;
-    //     this.lastTimeMilliseconds = this.lastTimeMilliseconds || timeSeconds;
-    //     let timeSinceLastCall = timeSeconds - this.lastTimeMilliseconds;
-    //     P2WorldManager.Instance().world.step(this.fixedTimeStep, timeSinceLastCall, this.maxSubSteps);
-    //     // renderBody(body.interpolatedPosition, body.interpolatedAngle);
-    // }
-
-
     protected registerSignals() {
         super.registerSignals();
 
@@ -335,6 +268,7 @@ export class PockeyEntryPoint extends AbstractEntryPoint {
         SignalsManager.CreateNewSignal(PockeySignalTypes.SHOOT_BALL);
         SignalsManager.CreateNewSignal(PockeySignalTypes.END_TURN);
         SignalsManager.CreateNewSignal(PockeySignalTypes.BALL_IN_POCKET);
+        SignalsManager.CreateNewSignal(PockeySignalTypes.PUCK_IN_POCKET);
         SignalsManager.CreateNewSignal(PockeySignalTypes.CHANGE_PLAYER_STATE);
         // SignalsManager.CreateNewSignal(PockeySignalTypes.WHITE_BALL_IN_POCKET);
         SignalsManager.CreateNewSignal(PockeySignalTypes.FIRST_BALL_FAULT);

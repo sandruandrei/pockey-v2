@@ -25,6 +25,7 @@ import * as _ from "lodash";
 import {BallBlocker} from "./OtherPooltableElements/ball-blocker";
 import {MaterialType} from "../p2-world-manager";
 import {BallType} from "../../../../common/pockey-value-objects";
+import {PuckGameObject} from "./ball/puck-game-object";
 
 // import {BallGameObject} from "./ball/ball-game-object";
 
@@ -46,6 +47,7 @@ export class PoolTableGraphics extends PIXI.Container {
 
     public stick: StickGameObject;
     public whiteBall: BallGameObject;
+    public puck: BallGameObject;
     public balls: BallGameObject[] = [];
 
     public leftLimit: number;
@@ -117,10 +119,6 @@ export class PoolTableGraphics extends PIXI.Container {
         new TableFelt(this.poolTableFeltBackground, this.poolTableBumper);
         ////end poolTableBumper
 
-        this.shadowsHolder = new PIXI.Container();
-        this.shadowsHolder.name = "ShadowsHolder";
-        // this.shadowsHolder.visible = false;
-        this.addChild(this.shadowsHolder);
 
         // decal icon
         this.decalIcon = new Decal();
@@ -130,8 +128,36 @@ export class PoolTableGraphics extends PIXI.Container {
         this.addChild(this.decalIcon);
         //end decal icon
 
+        this.shadowsHolder = new PIXI.Container();
+        this.shadowsHolder.name = "ShadowsHolder";
+        // this.shadowsHolder.visible = false;
+        this.addChild(this.shadowsHolder);
+
+        //puck
+        this.puck = new PuckGameObject('puck', BallType.Puck).build();
+
+        this.puck.setPosition(PockeySettings.MIDDLE_TABLE_POS.x, PockeySettings.MIDDLE_TABLE_POS.y);
+        // this.whiteBall.ballPosition = new Vector2(PockeySettings.MIDDLE_TABLE_LEFT_POS.x, PockeySettings.MIDDLE_TABLE_POS.y);
+        this.puck.setWallLimits(this.leftLimit, this.rightLimit, this.upLimit, this.downLimit);
+        this.puck.setPockets(this.pockets);
+        this.balls.push(this.puck);
+        this.addChild(this.puck.graphicObject);
+        // this.shadowsHolder.addChild((this.puck.graphicObject as PuckGraphicObject).ballShadow);
+        // this.puck.visible = false;
+        // this.puck.ballAnimationHolder = this.ballAnimationHolder;
+        // this.puck.createBallShadow();
+        // this.puck.tintBall(PockeySettings.PUCK_COLOR);
+        // this.puck.x = PockeySettings.MIDDLE_TABLE_POS.x;
+        // this.puck.y = PockeySettings.MIDDLE_TABLE_POS.y;
+        // this.puck.ballPosition = new Vector2(PockeySettings.MIDDLE_TABLE_POS.x, PockeySettings.MIDDLE_TABLE_POS.y);
+        // this.puck.setWallLimits(this.leftLimit, this.rightLimit, this.upLimit, this.downLimit);
+        // this.shadowsHolder.addChild(this.puck.ballShadow);
+        // this.ballsHolder.addChild(this.puck);
+        // this.balls.push(this.puck);
+        //end puck
+
         //rightGoal
-        this.rightGoal = new PuckGoal("right");
+        this.rightGoal = new PuckGoal(BallType.Right);
         this.rightGoal.name = "rightGoal";
         this.rightGoal.x = +487;
         this.rightGoal.y = -116;
@@ -139,21 +165,25 @@ export class PoolTableGraphics extends PIXI.Container {
         //end rightGoal
 
         //leftGoal
-        this.leftGoal = new PuckGoal("left");
+        this.leftGoal = new PuckGoal(BallType.Left);
         this.leftGoal.name = "leftGoal";
         this.leftGoal.x = -484 - this.leftGoal.width;
         this.leftGoal.y = -116;
         this.addChild(this.leftGoal);
         //end leftGoal
 
+        (this.puck as PuckGameObject).puckGoals = [this.leftGoal, this.rightGoal];
+        (this.puck as PuckGameObject).goalYPosition = this.leftGoal.y;
+        (this.puck as PuckGameObject).goalHeight = this.leftGoal.height;
+
         //goalies
-        this.leftGoalie = new GoalieGameObject("leftGoalie", BallType.Left);
+        this.leftGoalie = new GoalieGameObject("leftGoalie", BallType.Left).build();
         this.addChild(this.leftGoalie.graphicObject);
         this.leftGoalkeeperCircle = new PIXI.Circle(-510, 0, 100);
         this.goalkeepersCircles = [];
         this.goalkeepersCircles.push(this.leftGoalkeeperCircle);
 
-        this.rightGoalie = new GoalieGameObject("rightGoalie", BallType.Right);
+        this.rightGoalie = new GoalieGameObject("rightGoalie", BallType.Right).build();
         this.addChild(this.rightGoalie.graphicObject);
 
         this.rightGoalkeeperCircle = new PIXI.Circle(510, 0, 100);
@@ -173,14 +203,14 @@ export class PoolTableGraphics extends PIXI.Container {
         // this.balls.push(this.whiteBall);
         // this.shadowsHolder.addChild(this.whiteBall.graphicObject);
 
-        this.whiteBall = new BallGameObject('whiteBall', BallType.White);
+        this.whiteBall = new BallGameObject('whiteBall', BallType.White).build();
         // this.whiteBall.createBallShadow();
         this.whiteBall.setPosition(ballPos.x, ballPos.y);
         // this.whiteBall.ballPosition = new Vector2(PockeySettings.MIDDLE_TABLE_LEFT_POS.x, PockeySettings.MIDDLE_TABLE_POS.y);
         this.whiteBall.setWallLimits(this.leftLimit, this.rightLimit, this.upLimit, this.downLimit);
         this.whiteBall.setPockets(this.pockets);
         this.balls.push(this.whiteBall);
-        this.shadowsHolder.addChild(this.whiteBall.graphicObject);
+        this.shadowsHolder.addChildAt(this.whiteBall.graphicObject, 0);
 
         // this.blackBall = new BallGameObject('blackBall', TableSide.NONE, BallType.White);
         // this.blackBall.createBallShadow();
@@ -202,7 +232,7 @@ export class PoolTableGraphics extends PIXI.Container {
             angle = (id / (PockeySettings.BALLS_NUMBER_FOR_EACH_PLAYER / 2)) * Math.PI;
             ballPos = new Vector2(PockeySettings.MIDDLE_TABLE_POS.x + (PockeySettings.BALLS_DISTANCE * Math.cos(angle)), PockeySettings.MIDDLE_TABLE_POS.y + (PockeySettings.BALLS_DISTANCE * Math.sin(angle)));
 
-            ball = new BallGameObject(BallType.Right + id.toString(), BallType.Right);
+            ball = new BallGameObject(BallType.Right + id.toString(), BallType.Right).build();
             // ball.createBallShadow();
             ball.setPosition(ballPos.x, ballPos.y);
             // ball.ballAnimationHolder = this.ballAnimationHolder;
@@ -210,7 +240,7 @@ export class PoolTableGraphics extends PIXI.Container {
             ball.setWallLimits(this.leftLimit, this.rightLimit, this.upLimit, this.downLimit);
             ball.setPockets(this.pockets);
             this.balls.push(ball);
-            this.shadowsHolder.addChild(ball.graphicObject);
+            this.shadowsHolder.addChildAt(ball.graphicObject, 0);
         });
         //end right balls
         //left balls
@@ -218,7 +248,7 @@ export class PoolTableGraphics extends PIXI.Container {
             angle = (id / (PockeySettings.BALLS_NUMBER_FOR_EACH_PLAYER / 2)) * Math.PI + Math.PI / PockeySettings.BALLS_NUMBER_FOR_EACH_PLAYER;
             ballPos = new Vector2(PockeySettings.MIDDLE_TABLE_POS.x + (PockeySettings.BALLS_DISTANCE * Math.cos(angle)), PockeySettings.MIDDLE_TABLE_POS.y + (PockeySettings.BALLS_DISTANCE * Math.sin(angle)));
 
-            ball = new BallGameObject(BallType.Left + id.toString(), BallType.Left);
+            ball = new BallGameObject(BallType.Left + id.toString(), BallType.Left).build();
             // ball.createBallShadow();
             ball.setPosition(ballPos.x, ballPos.y);
             // ball.ballAnimationHolder = this.ballAnimationHolder;
@@ -226,12 +256,12 @@ export class PoolTableGraphics extends PIXI.Container {
             ball.setWallLimits(this.leftLimit, this.rightLimit, this.upLimit, this.downLimit);
             ball.setPockets(this.pockets);
             this.balls.push(ball);
-            this.shadowsHolder.addChild(ball.graphicObject);
+            this.shadowsHolder.addChildAt(ball.graphicObject, 0);
         });
         //end left balls
 
         //stick
-        this.stick = new StickGameObject("stick");
+        this.stick = new StickGameObject("stick").build();
         this.stick.setPosition(-145, 110);
         this.addChild(this.stick.graphicObject);
 

@@ -25,6 +25,7 @@ import {PockeyPlayerManager} from "../../../../pockey-player-manager";
 
 export class StickGameObject extends GameObject {
     private shootTimeline: TimelineMax;
+
     public isActive: boolean = false;
     public power: number = 0;
     public rotationEnabled: boolean = false;
@@ -36,13 +37,16 @@ export class StickGameObject extends GameObject {
     protected firstPointOfTangent: Vector2;
     protected secondPointOfTangent: Vector2;
 
-    // protected rotation:number = 0;
+    public build(): StickGameObject {
+        this.createElements();
+        this.addGraphicObject();
+        this.postConstructor();
 
-    constructor(name: string) {
-        super(name);
         this.defineShootTimeline();
         this.gameObjectData.alpha = 1;
         PockeyPlayerManager.Instance().player.pockeyGameWorld.addGameObject(this);
+
+        return this;
     }
 
     setPosition(x: number, y: number) {
@@ -313,8 +317,9 @@ export class StickGameObject extends GameObject {
 
         let isOnShoot: boolean = false;
         if (this.snapshotsBundle[0].state) {
-            if (this.snapshotsBundle[0].state == PockeyStates.onShoot)
-                isOnShoot = true;
+            if (this.snapshotsBundle[0].state == PockeyStates.onShoot){
+                this.gameObjectData.state = PockeyStates.onShoot;
+                isOnShoot = true;}
             else if (this.snapshotsBundle[0].state == PockeyStates.onRearrangeStick)
                 this.graphicObject.visible = true;
         }

@@ -14,8 +14,6 @@ import {BallType} from "../../../../../common/pockey-value-objects";
 
 export class PuckGoal extends PIXI.Container {
 
-    public type: BallType;
-
     private goalRightPath: string = "goalTop_right.png";
     private goalTopRightPath: string = "goalTop_righttTopper.png";
 
@@ -29,10 +27,10 @@ export class PuckGoal extends PIXI.Container {
     private goalAnimationTween: TweenMax;
     // private _caca:number
     // private _tint:number;
-    constructor(side: string) {
+    constructor(public type:BallType) {
         super();
 
-        if (side == "left") {
+        if (this.type == BallType.Left) {
             this.goalBottomGraphics = new PIXI.Sprite(PIXI.Texture.fromFrame(this.goalLeftPath));
             this.goalMiddleGraphics = new PIXI.Sprite(PIXI.Texture.fromFrame(this.goalLeftPath));
             this.goalTopGraphics = new PIXI.Sprite(PIXI.Texture.fromFrame(this.goalTopLeftPath));

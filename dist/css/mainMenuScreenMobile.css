@@ -240,21 +240,21 @@
     }
 
     #MainMenuPlayerWins {
-        background-image: url("../Assets/Desktop/Images/stat-wins-color.svg");
+        background-image: url("../Assets/Desktop/Images/Stats/stat-wins-color.svg");
     }
 
     #MainMenuPlayerLosses {
-        background-image: url("../Assets/Desktop/Images/stat-winloss-color.svg");
+        background-image: url("../Assets/Desktop/Images/Stats/stat-winloss-color.svg");
     }
 
     #MainMenuPlayerStreak {
-        background-image: url("../Assets/Desktop/Images/stat-ballstreak-color.svg");
+        background-image: url("../Assets/Desktop/Images/Stats/stat-ballstreak-color.svg");
         background-size: 74%;
         background-position: center 6px;
     }
 
     #MainMenuPlayerFouls {
-        background-image: url("../Assets/Desktop/Images/stat-penalty-color.svg");
+        background-image: url("../Assets/Desktop/Images/Stats/stat-penalty-color.svg");
     }
 
     .mainMenuRankingText {

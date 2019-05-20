@@ -19,7 +19,7 @@ import {Settings} from "../../../../qFramework/Settings";
 export class GoalieMoverGameObject extends GameObject {
     protected leftGoalie: GoalieGameObject;
     protected rightGoalie: GoalieGameObject;
-    protected movingSpeed: number = 2;
+    protected movingSpeed: number = 0;
     protected movingDirection: number = 1;
     protected yLimit: number = 50;
     protected yPos: number = 0;

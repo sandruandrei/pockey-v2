@@ -103,6 +103,10 @@ export class PockeyClientPlayer extends Player {
         this.socket.emit(PockeySocketMessages.BALL_IN_THE_HALL, ballType);
     }
 
+    public onPuckInPocket(ballType: BallType): void {
+        this.socket.emit(PockeySocketMessages.PUCK_IN_THE_HALL, ballType);
+    }
+
     public onOwnBallFault(): void {
         this.socket.emit(PockeySocketMessages.OWN_BALL_TOUCHED_FIRST);
     }

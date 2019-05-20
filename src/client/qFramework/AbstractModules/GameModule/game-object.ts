@@ -21,9 +21,15 @@ export class GameObject {
 
     // constructor(options?: {}) {
     constructor(protected name: string) {
+
+    }
+
+    public build(): GameObject {
         this.createElements();
         this.addGraphicObject();
         this.postConstructor();
+
+        return this;
     }
 
     protected postConstructor(): void {

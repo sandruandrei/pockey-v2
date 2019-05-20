@@ -31,7 +31,7 @@ export class PockeyGameModule extends AbstractModule {
         this.poolTableGraphics = new PoolTableGraphics();
         this.addChild(this.poolTableGraphics);
 
-        this.poolTableManager = new PoolTableManager(this.poolTableGraphics)
+        this.poolTableManager = new PoolTableManager(this.poolTableGraphics);
         new PockeyGameManager(this.poolTableManager);
 
 

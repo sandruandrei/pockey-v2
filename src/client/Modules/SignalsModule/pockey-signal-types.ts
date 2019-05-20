@@ -25,6 +25,7 @@ export class PockeySignalTypes {
     public static END_TURN: string = "PockeySignalTypes." + "END_TURN";
     public static CHANGE_PLAYER_STATE: string = "PockeySignalTypes." + "CHANGE_PLAYER_STATE";
     public static BALL_IN_POCKET: string = "PockeySignalTypes." + "BALL_IN_POCKET";
+    public static PUCK_IN_POCKET: string = "PockeySignalTypes." + "PUCK_IN_POCKET";
     public static OWN_BALL_TOUCHED_FIRST: string = "PockeySignalTypes." + "OWN_BALL_TOUCHED_FIRST";
 
 

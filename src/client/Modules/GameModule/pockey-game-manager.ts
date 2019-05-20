@@ -35,6 +35,7 @@ export class PockeyGameManager {
 
         SignalsManager.AddSignalCallback(PockeySignalTypes.START_GAME, this.onStartGame.bind(this));
         SignalsManager.AddSignalCallback(PockeySignalTypes.BALL_IN_POCKET, this.onBallInPocket.bind(this));
+        SignalsManager.AddSignalCallback(PockeySignalTypes.PUCK_IN_POCKET, this.onPuckInPocket.bind(this));
         SignalsManager.AddSignalCallback(PockeySignalTypes.END_TURN, this.onEndTurn.bind(this));
         SignalsManager.AddSignalCallback(PockeySignalTypes.CHANGE_PLAYER_STATE, this.onChangePlayerState.bind(this));
         SignalsManager.AddSignalCallback(PockeySignalTypes.WHITE_BALL_REPOSITIONED, this.onWhiteBallRepositioned.bind(this));
@@ -81,6 +82,10 @@ export class PockeyGameManager {
 
     protected onBallInPocket(ballType: BallType[]): void {
         PockeyPlayerManager.Instance().player.onBallInPocket(ballType[0]);
+    }
+
+    protected onPuckInPocket(ballType: BallType[]): void {
+        PockeyPlayerManager.Instance().player.onPuckInPocket(ballType[0]);
     }
 
     protected onEndTurn(): void {
