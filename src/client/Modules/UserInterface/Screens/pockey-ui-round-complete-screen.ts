@@ -14,8 +14,9 @@ import {PockeyConnectionSignals, PockeySignalTypes} from "../../SignalsModule/po
 import {SignalsManager} from "../../../qFramework/Signals/signals-manager";
 import {AbstractScreen} from "../../../qFramework/AbstractModules/UserInterface/abstract-screen";
 import {Player} from "../../../../common/player";
-import {RoundCompleteType, RoundVO} from "../../../../common/pockey-value-objects";
+import {BallType, RoundCompleteType, RoundVO} from "../../../../common/pockey-value-objects";
 import {PockeyPlayerManager} from "../../../pockey-player-manager";
+import {PlayerGraphicsInterface} from "./GameScreen/pockey-ui-game-screen";
 
 
 export class RoundCompleteScreen extends AbstractScreen {
@@ -34,6 +35,9 @@ export class RoundCompleteScreen extends AbstractScreen {
     private rematchDiv: HTMLDivElement | undefined;
     private confirmRematchButton: HTMLDivElement | undefined;
     private rejectRematchButton: HTMLDivElement | undefined;
+
+    private playerGraphicsInterface: PlayerGraphicsInterface;
+    private opponentGraphicsInterface: PlayerGraphicsInterface;
 
     constructor() {
         super();
@@ -104,6 +108,31 @@ export class RoundCompleteScreen extends AbstractScreen {
 
     private onSetSides() {
 
+        this.playerGraphicsInterface.data = PockeyPlayerManager.Instance().player.data;
+        this.opponentGraphicsInterface.data = PockeyPlayerManager.Instance().opponent;
+
+        if (PockeyPlayerManager.Instance().player.data.type == BallType.Left) {
+            this.playerGraphicsInterface.graphics = this.leftGameGraphics;
+            this.opponentGraphicsInterface.graphics = this.rightGameGraphics;
+            // leftSideColor = parseInt(PockeyPlayerManager.Instance().player.data.color, 16);
+            // rightSideColor = parseInt(PockeyPlayerManager.Instance().opponent.color, 16);
+        } else {
+            this.playerGraphicsInterface.graphics = this.rightGameGraphics;
+            this.opponentGraphicsInterface.graphics = this.leftGameGraphics;
+            // this.playerGraphicsInterface.data = PockeyPlayerManager.Instance().player.data;
+            // this.opponentGraphicsInterface.data = PockeyPlayerManager.Instance().opponent;
+            // leftSideColor = parseInt(PockeyPlayerManager.Instance().opponent.color, 16);
+            // rightSideColor = parseInt(PockeyPlayerManager.Instance().player.data.color, 16);
+        }
+
+        this.playerGraphicsInterface.graphics.tint(parseInt(this.playerGraphicsInterface.data.color, 16));
+        this.opponentGraphicsInterface.graphics.tint(parseInt(this.opponentGraphicsInterface.data.color, 16));
+
+        this.playerGraphicsInterface.graphics.updateUsername(this.playerGraphicsInterface.data.nickname);
+        this.opponentGraphicsInterface.graphics.updateUsername(this.opponentGraphicsInterface.data.nickname);
+
+        this.playerGraphicsInterface.graphics.updateAvatar(this.playerGraphicsInterface.data.avatar);
+        this.opponentGraphicsInterface.graphics.updateAvatar(this.opponentGraphicsInterface.data.avatar);
         // this.leftGameGraphics.updateScore(PockeySettings.BALLS_NUMBER_FOR_EACH_PLAYER);
         // this.rightGameGraphics.updateScore(PockeySettings.BALLS_NUMBER_FOR_EACH_PLAYER);
 
