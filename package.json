@@ -51,7 +51,7 @@
     "@types/webfontloader": "^1.6.29",
     "babel-preset-env": "^1.7.0",
     "babylonjs": "^3.3.0",
-    "engine.io": "^3.3.2",
+    "engine.io": "^3.6.0",
     "es6-shim": "^0.35.4",
     "gsap": "^2.1.2",
     "howler": "^2.1.1",
